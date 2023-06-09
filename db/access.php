@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Plugin strings are defined here.
+ * Capability definitions for the PolyTeam module.
  *
  * @package     mod_polyteam
  * @category    string
@@ -25,9 +25,27 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'PolyTeam';
-
-$string['modulename'] = 'PolyTeam';
-$string['modulenameplural'] = 'PolyTeam';
-$string['modulename_help'] = 'PolyTeam is a tool to assign students to Moodle groups based on their answers to a personnality questionnaire such as Myers-Briggs Type Indicator.';
-// TODO : expand this as we add new features.
+$capabilities = array(
+    // Recommended configuration for the addinstance and view capabilities from Moodle dev doc.
+    'mod/polyteam:addinstance' => [
+        'riskbitmask' => RISK_XSS,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => [
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+        'clonepermissionsfrom' => 'moodle/course:manageactivities',
+    ],
+    'mod/[modname]:view' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => [
+            'guest' => CAP_ALLOW,
+            'student' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+);

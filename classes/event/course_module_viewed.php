@@ -15,19 +15,33 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Plugin strings are defined here.
+ * the mod_polyteam viewed event.
  *
  * @package     mod_polyteam
- * @category    string
  * @copyright   2023 GIGL <...@polymtl.ca>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_polyteam\event;
+
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'PolyTeam';
-
-$string['modulename'] = 'PolyTeam';
-$string['modulenameplural'] = 'PolyTeam';
-$string['modulename_help'] = 'PolyTeam is a tool to assign students to Moodle groups based on their answers to a personnality questionnaire such as Myers-Briggs Type Indicator.';
-// TODO : expand this as we add new features.
+/**
+ * The mod_polyteam viewed event class.
+ *
+ * @package     mod_polyteam
+ * @copyright   2023 GIGL <...@polymtl.ca>
+ * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class course_module_viewed extends \core\event\course_module_viewed {
+    /**
+     * Init method.
+     * 
+     * @return void
+     */
+    protected function init() {
+        $this->data['crud'] = 'r';
+        $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
+        $this->data['objecttable'] = 'polyteam';
+    }
+}
