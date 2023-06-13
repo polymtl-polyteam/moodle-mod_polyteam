@@ -72,7 +72,7 @@ class mod_polyteam_mod_form extends moodleform_mod {
 
         // Availability section to define start and end dates.
         $mform->addElement('header', 'availability', get_string('availability'));
-        
+
         $mform->addElement('date_time_selector', 'timeopen', get_string("choiceopen", "choice"),
             array('optional' => true));
 
