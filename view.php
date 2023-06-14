@@ -58,6 +58,12 @@ $PAGE->set_title(format_string($moduleinstance->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
+require_capability('mod/polyteam:answerquestionnaire', $modulecontext);
+
 echo $OUTPUT->header();
+echo $OUTPUT->heading(get_string('mbtiquest', 'mod_polyteam'));
+
+$mform = new \mod_polyteam\form\mbti_form();
+$mform->display();
 
 echo $OUTPUT->footer();
