@@ -39,8 +39,10 @@ $string['polyteamname'] = 'Name';
 // Main interface.
 $string['mbtiquest'] = 'MBTI questionnaire';
 $string['buildteams'] = 'Build teams';
+$string['notansweredyet'] = 'You do not have filled the questionnaire yet';
 
 // MBTI questionnaire.
+$string['checkzerooneortwo'] = 'Check zero, one or two answers for each question.';
 $string['youaremore'] = 'You are more';
 $string['youprefer'] = 'You prefer';
 $string['youlearnbetterby'] = 'You learn better by';
@@ -58,7 +60,7 @@ $string['groups'] = 'groups';
 $string['individuals'] = 'individuals';
 $string['listening'] = 'listening';
 $string['reading'] = 'reading';
-$string['talkative']= 'talkative';
+$string['talkative'] = 'talkative';
 $string['quiet'] = 'quiet';
 $string['jpheader'] = 'Orientation: Structured or Flexible';
 $string['systematic'] = 'systematic';

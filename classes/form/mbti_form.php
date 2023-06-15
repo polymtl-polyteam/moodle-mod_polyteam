@@ -42,6 +42,9 @@ class mbti_form extends \moodleform {
     public function definition() {
         $mform = $this->_form;
 
+        $mform->addElement('hidden', 'id', $this->_customdata['id']); // Course module id.
+        $mform->setType('id', PARAM_INT);
+
         $mform->addElement('header', 'eiheader', get_string('eiheader', 'mod_polyteam'));
         $mform->setExpanded('eiheader');
 
@@ -81,10 +84,19 @@ class mbti_form extends \moodleform {
         $this->add_action_buttons();
     }
 
-    private function mbti_question($form, $num, $intro, $opt1, $opt2) {
+    /**
+     * Structure for MBTI questions : one generic question followed by two opposite options.
+     *
+     * @param object $form the form to add the question to
+     * @param string $quid question identifier
+     * @param string $intro question statement
+     * @param string $opt1 first answer
+     * @param string $opt2 second answer
+     */
+    private function mbti_question($form, $quid, $intro, $opt1, $opt2) {
         $buttons = array();
-        $buttons[] =& $form->createElement('advcheckbox', $num.substr($num, 0, 1), $opt1);
-        $buttons[] =& $form->createElement('advcheckbox', $num.substr($num, 1, 1), $opt2);
-        $form->addGroup($buttons, $num.'buttons', $intro, array(' '), false);
+        $buttons[] =& $form->createElement('advcheckbox', $quid.substr($quid, 0, 1), $opt1);
+        $buttons[] =& $form->createElement('advcheckbox', $quid.substr($quid, 1, 1), $opt2);
+        $form->addGroup($buttons, $quid.'buttons', $intro, array(' '), false);
     }
 }

@@ -58,12 +58,18 @@ $PAGE->set_title(format_string($moduleinstance->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
-require_capability('mod/polyteam:answerquestionnaire', $modulecontext);
-
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('mbtiquest', 'mod_polyteam'));
 
-$mform = new \mod_polyteam\form\mbti_form();
-$mform->display();
+if (has_capability('mod/polyteam:answerquestionnaire', $modulecontext)) {
+    // TODO : process different cases
+    echo get_string('notansweredyet', 'mod_polyteam');
+    echo html_writer::link(
+        new moodle_url(
+            '/mod/polyteam/mbti.php',
+            array('id' => $cm->id)
+        ),
+        'remplir quest'
+    );
+}
 
 echo $OUTPUT->footer();

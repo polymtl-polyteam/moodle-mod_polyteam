@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/polyteam/db" VERSION="20230608" COMMENT="XMLDB file for Moodle mod_polyteam"
+<XMLDB PATH="mod/polyteam/db" VERSION="20230615" COMMENT="XMLDB file for Moodle mod_polyteam"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -17,6 +17,21 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="fk_course" TYPE="foreign" FIELDS="course" REFTABLE="course" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="polyteam_mbti" COMMENT="MBTI categories projected into 8 pairwise categories (e.g. ES vs IN, EN vs IS, etc.). We only have to store 4 types (here, any type composed with extrovert E) per user to have their favorite (int &amp;gt; 0) personality types.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="es" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Extrovert and Sensing - (Experiment)"/>
+        <FIELD NAME="en" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Extrovert and Intuition - (Ideation)"/>
+        <FIELD NAME="et" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Extrovert and Thinking - (Organization)"/>
+        <FIELD NAME="ef" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Extrovert and Feeling - (Community)"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="polyteam-mbti-user-foreign-key" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
   </TABLES>
