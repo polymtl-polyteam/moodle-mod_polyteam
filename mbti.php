@@ -59,6 +59,7 @@ if ($mform->is_cancelled()) {
 
     $record = new stdClass;
     $record->userid = $USER->id;
+    $record->moduleid = $cm->id;
     $record->timemodified = time();
     // Computations by Doug Wilde (2008).
     $record->es = $ei + $jp + 2 * $sn; // IN = - ES.
