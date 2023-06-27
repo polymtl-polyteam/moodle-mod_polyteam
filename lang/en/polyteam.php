@@ -39,7 +39,9 @@ $string['polyteamname'] = 'Name';
 // Main interface.
 $string['mbtiquest'] = 'MBTI questionnaire';
 $string['buildteams'] = 'Build teams';
-$string['notansweredyet'] = 'You do not have filled the questionnaire yet';
+$string['notansweredyet'] = 'You do not have filled the questionnaire yet.';
+$string['alreadyanswered'] = 'You have filled the questionnaire on {$a}.';
+$string['fillinquestionnaire'] = "Fill in questionnaire";
 
 // MBTI questionnaire.
 $string['checkzerooneortwo'] = 'Check zero, one or two answers for each question.';

@@ -61,15 +61,29 @@ $PAGE->set_context($modulecontext);
 echo $OUTPUT->header();
 
 if (has_capability('mod/polyteam:answerquestionnaire', $modulecontext)) {
-    // TODO : process different cases
-    echo get_string('notansweredyet', 'mod_polyteam');
-    echo html_writer::link(
-        new moodle_url(
-            '/mod/polyteam/mbti.php',
-            array('id' => $cm->id)
-        ),
-        'remplir quest'
-    );
+    if (!$answer = $DB->get_record('polyteam_mbti', array('moduleid' => $cm->id, 'userid' => $USER->id))) {
+        echo html_writer::tag('p', get_string('notansweredyet', 'mod_polyteam'));
+        echo html_writer::link(
+            new moodle_url(
+                '/mod/polyteam/mbti.php',
+                array('id' => $cm->id)
+            ),
+            get_string('fillinquestionnaire', 'mod_polyteam'),
+            array('class' => 'btn btn-secondary') // To format it as a bootstrap button.
+        );
+    } else {
+        echo html_writer::tag('p',
+            get_string('alreadyanswered', 'mod_polyteam', userdate($answer->timemodified))
+        );
+        echo html_writer::link(
+            new moodle_url(
+                '/mod/polyteam/mbti.php',
+                array('id' => $cm->id)
+            ),
+            get_string('fillinquestionnaire', 'mod_polyteam'),
+            array('class' => 'btn btn-secondary') // To format it as a bootstrap button.
+        );
+    }
 }
 
 echo $OUTPUT->footer();
