@@ -80,7 +80,7 @@ if (has_capability('mod/polyteam:answerquestionnaire', $modulecontext)) {
                 '/mod/polyteam/mbti.php',
                 array('id' => $cm->id)
             ),
-            get_string('fillinquestionnaire', 'mod_polyteam'),
+            get_string('editanswer', 'mod_polyteam'),
             array('class' => 'btn btn-secondary') // To format it as a bootstrap button.
         );
     }

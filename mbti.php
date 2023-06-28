@@ -57,9 +57,11 @@ if ($mform->is_cancelled()) {
     $sn = $d->sn1s + $d->sn2s + $d->sn3s + $d->sn4s + $d->sn5s - ($d->sn1n + $d->sn2n + $d->sn3n + $d->sn4n + $d->sn5n);
     $tf = $d->tf1t + $d->tf2t + $d->tf3t + $d->tf4t + $d->tf5t - ($d->tf1f + $d->tf2f + $d->tf3f + $d->tf4f + $d->tf5f);
 
-    $record = new stdClass;
-    $record->userid = $USER->id;
-    $record->moduleid = $cm->id;
+    if (!$record = $DB->get_record('polyteam_mbti', array('moduleid' => $cm->id, 'userid' => $USER->id))) {
+        $record = new stdClass;
+        $record->userid = $USER->id;
+        $record->moduleid = $cm->id;
+    }
     $record->timemodified = time();
     // Computations by Doug Wilde (2008).
     $record->es = $ei + $jp + 2 * $sn; // IN = - ES.
@@ -67,7 +69,11 @@ if ($mform->is_cancelled()) {
     $record->et = $ei + $jp + 2 * $tf; // IF = - ET.
     $record->ef = $ei + $jp - 2 * $tf; // IT = - EF.
 
-    $DB->insert_record('polyteam_mbti', $record);
+    if ($DB->record_exists('polyteam_mbti', array('moduleid' => $cm->id, 'userid' => $USER->id))) {
+        $DB->update_record('polyteam_mbti', $record);
+    } else {
+        $DB->insert_record('polyteam_mbti', $record);
+    }
 
     redirect($mainurl);
 } else {

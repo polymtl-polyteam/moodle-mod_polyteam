@@ -42,6 +42,7 @@ $string['buildteams'] = 'Build teams';
 $string['notansweredyet'] = 'You do not have filled the questionnaire yet.';
 $string['alreadyanswered'] = 'You have filled the questionnaire on {$a}.';
 $string['fillinquestionnaire'] = "Fill in questionnaire";
+$string['editanswer'] = 'Edit answer';
 
 // MBTI questionnaire.
 $string['checkzerooneortwo'] = 'Check zero, one or two answers for each question.';
