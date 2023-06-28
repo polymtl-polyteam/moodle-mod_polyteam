@@ -58,31 +58,52 @@ $PAGE->set_title(format_string($moduleinstance->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
+// Mark as viewed.
+$completion=new completion_info($course);
+$completion->set_module_viewed($cm);
+
 echo $OUTPUT->header();
 
-if (has_capability('mod/polyteam:answerquestionnaire', $modulecontext)) {
-    if (!$answer = $DB->get_record('polyteam_mbti', array('moduleid' => $cm->id, 'userid' => $USER->id))) {
-        echo html_writer::tag('p', get_string('notansweredyet', 'mod_polyteam'));
-        echo html_writer::link(
-            new moodle_url(
-                '/mod/polyteam/mbti.php',
-                array('id' => $cm->id)
-            ),
-            get_string('fillinquestionnaire', 'mod_polyteam'),
-            array('class' => 'btn btn-secondary') // To format it as a bootstrap button.
-        );
-    } else {
-        echo html_writer::tag('p',
-            get_string('alreadyanswered', 'mod_polyteam', userdate($answer->timemodified))
-        );
-        echo html_writer::link(
-            new moodle_url(
-                '/mod/polyteam/mbti.php',
-                array('id' => $cm->id)
-            ),
-            get_string('editanswer', 'mod_polyteam'),
-            array('class' => 'btn btn-secondary') // To format it as a bootstrap button.
-        );
+if ($CFG->branch < 400) {
+    if (class_exists('\core_completion\cm_completion_details') && class_exists('\core\activity_dates')) {
+        // Show the activity dates and completion details.
+        $modinfo = get_fast_modinfo($course);
+        $cminfo = $modinfo->get_cm($cm->id);
+        $completiondetails = \core_completion\cm_completion_details::get_instance($cminfo, $USER->id);
+        $activitydates = \core\activity_dates::get_dates_for_module($cminfo, $USER->id);
+        echo $OUTPUT->activity_information($cminfo, $completiondetails, $activitydates);
+    }
+}
+
+if ($moduleinstance->timeopen and time() < $moduleinstance->timeopen) { // First condition to check if timeopen != 0 (default).
+    echo 'trop tôt'; // TBA
+} else if ($moduleinstance->timeclose and time() > $moduleinstance->timeclose) {
+    echo 'trop tard'; // TBA
+} else {
+    if (has_capability('mod/polyteam:answerquestionnaire', $modulecontext)) {
+        if (!$answer = $DB->get_record('polyteam_mbti', array('moduleid' => $cm->id, 'userid' => $USER->id))) {
+            echo html_writer::tag('p', get_string('notansweredyet', 'mod_polyteam'));
+            echo html_writer::link(
+                new moodle_url(
+                    '/mod/polyteam/mbti.php',
+                    array('id' => $cm->id)
+                ),
+                get_string('fillinquestionnaire', 'mod_polyteam'),
+                array('class' => 'btn btn-secondary') // To format it as a bootstrap button.
+            );
+        } else {
+            echo html_writer::tag('p',
+                get_string('alreadyanswered', 'mod_polyteam', userdate($answer->timemodified))
+            );
+            echo html_writer::link(
+                new moodle_url(
+                    '/mod/polyteam/mbti.php',
+                    array('id' => $cm->id)
+                ),
+                get_string('editanswer', 'mod_polyteam'),
+                array('class' => 'btn btn-secondary')
+            );
+        }
     }
 }
 
