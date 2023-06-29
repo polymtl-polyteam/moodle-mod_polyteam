@@ -75,19 +75,29 @@ if ($CFG->branch < 400) {
     }
 }
 
+$backtocourseurl = new moodle_url('/course/view.php', array('id' => $cm->course));
+
 if ($moduleinstance->timeopen and time() < $moduleinstance->timeopen) { // First condition to check if timeopen != 0 (default).
-    echo 'trop tôt'; // TBA
+    echo html_writer::tag('p', get_string('notopenyet', 'mod_polyteam', userdate($moduleinstance->timeopen)));
+    echo html_writer::link(
+        $backtocourseurl,
+        get_string('backtocourse', 'mod_polyteam'),
+        array('class' => 'btn btn-secondary')
+    );
 } else if ($moduleinstance->timeclose and time() > $moduleinstance->timeclose) {
-    echo 'trop tard'; // TBA
+    echo html_writer::tag('p', get_string('nowclosed', 'mod_polyteam', userdate($moduleinstance->timeclose)));
+    echo html_writer::link(
+        $backtocourseurl,
+        get_string('backtocourse', 'mod_polyteam'),
+        array('class' => 'btn btn-secondary')
+    );
 } else {
     if (has_capability('mod/polyteam:answerquestionnaire', $modulecontext)) {
+        $mbtiurl = new moodle_url('/mod/polyteam/mbti.php', array('id' => $cm->id));
         if (!$answer = $DB->get_record('polyteam_mbti', array('moduleid' => $cm->id, 'userid' => $USER->id))) {
             echo html_writer::tag('p', get_string('notansweredyet', 'mod_polyteam'));
             echo html_writer::link(
-                new moodle_url(
-                    '/mod/polyteam/mbti.php',
-                    array('id' => $cm->id)
-                ),
+                $mbtiurl,
                 get_string('fillinquestionnaire', 'mod_polyteam'),
                 array('class' => 'btn btn-secondary') // To format it as a bootstrap button.
             );
@@ -96,10 +106,7 @@ if ($moduleinstance->timeopen and time() < $moduleinstance->timeopen) { // First
                 get_string('alreadyanswered', 'mod_polyteam', userdate($answer->timemodified))
             );
             echo html_writer::link(
-                new moodle_url(
-                    '/mod/polyteam/mbti.php',
-                    array('id' => $cm->id)
-                ),
+                $mbtiurl,
                 get_string('editanswer', 'mod_polyteam'),
                 array('class' => 'btn btn-secondary')
             );
