@@ -36,5 +36,16 @@
         <KEY NAME="polyteam-mbti-module-foreign-key" TYPE="foreign" FIELDS="moduleid" REFTABLE="polyteam" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
+    <TABLE NAME="polyteam_build_cache" COMMENT="Cache for team building form.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="moduleid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="data" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The cached data"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="polyteam-build-cache-module-foreign-key" TYPE="foreign" FIELDS="moduleid" REFTABLE="polyteam" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
   </TABLES>
 </XMLDB>
