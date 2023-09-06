@@ -516,7 +516,7 @@ function generate_teams_with_simulated_annealing(
             return $a[1] <=> $b[1];
         });
 
-        list($neighbor_sol, $neighbor_sol_sse) = $neighbor_sols_and_costs[0];
+        list($neighbor_sol, $neighbor_sol_sse) = reset($neighbor_sols_and_costs);
 
         // Check if neighbor is best so far
         $sse_diff = $current_sse - $neighbor_sol_sse;
@@ -530,7 +530,6 @@ function generate_teams_with_simulated_annealing(
             if ($current_sse < $best_sse) {
                 $best_solution = $current_solution;
                 $best_sse = $current_sse;
-                // echo "New best cost: " . $best_sse . '<br>'; // TODO : Remove
             }
         }
 
@@ -632,50 +631,100 @@ function test_simulated_annealing_team_generation(): void
     }
 }
 
-function generate_teams($course, int $nstudentsperteam, string $strategy, string $groupingid): array
+function generate_teams($course, $coursemodule, int $nstudentsperteam, string $strategy, string $groupingid): array
 {
+    global $DB;
     $ctx = context_course::instance($course->id);
     if ($groupingid == "all") {
-        // Only Students that are allowed to submit an assignment
-        $students = get_enrolled_users($ctx, 'mod/assign:submit');
+        // TODO: Change capability to users that can answer the questionnaire
+        $users = get_enrolled_users($ctx, 'mod/assign:submit');
     } else {
-        $students = groups_get_grouping_members($groupingid, "DISTINCT u.id");
+        $users = groups_get_grouping_members($groupingid, "DISTINCT u.id");
     }
-    if (count($students) == 0) {
+    if (count($users) == 0) {
         return [false, "Not enough students to generate teams", []]; // TODO: Internationalization
+    } elseif (count($users) <= $nstudentsperteam) {
+        $students = array_map(function ($user) {
+            return new Student($user, new FormMetrics(0, 0, 0, 0));
+        }, $users);
+        return [True, "", new Team($students)];
     }
 
-    $students = array_map(function ($user) {
-        $formmetrics = generate_one_fake_form_metrics(0.5, 0.5, 0.5, 0.5);
-        return new Student($user, $formmetrics);
-    }, $students);
+    list($usersswhoreplied, $userswhohaventreplied) =
+        seperateuserswhohaventreplied($coursemodule, $users);
 
-    if ($strategy == "randommatching") {
-        $teams = generate_random_teams($students, $nstudentsperteam);
-    } elseif ($strategy == "fastmatching") {
-        $teams = generate_greedily_teams($students, $nstudentsperteam, "sse_cost");
-    } elseif ($strategy == "simulatedannealingsum") {
-        $teams = generate_teams_with_simulated_annealing($students, $nstudentsperteam, "sum_cost");
-    } elseif ($strategy == "simulatedannealingsse") {
-        $teams = generate_teams_with_simulated_annealing($students, $nstudentsperteam, "sse_cost");
-    } elseif ($strategy == "simulatedannealingstd") {
-        $teams = generate_teams_with_simulated_annealing($students, $nstudentsperteam, "std_cost");
+    if (count($usersswhoreplied) == 0) {
+        $teams = [];
     } else {
-        return [false, "Unknown matching algorithm", []]; // TODO: Internationalization
+        if ($strategy == "randommatching") {
+            $teams = generate_random_teams($usersswhoreplied, $nstudentsperteam);
+        } elseif ($strategy == "fastmatching") {
+            $teams = generate_greedily_teams($usersswhoreplied, $nstudentsperteam, "sse_cost");
+        } elseif ($strategy == "simulatedannealingsum") {
+            $teams = generate_teams_with_simulated_annealing($usersswhoreplied, $nstudentsperteam, "sum_cost");
+        } elseif ($strategy == "simulatedannealingsse") {
+            $teams = generate_teams_with_simulated_annealing($usersswhoreplied, $nstudentsperteam, "sse_cost");
+        } elseif ($strategy == "simulatedannealingstd") {
+            $teams = generate_teams_with_simulated_annealing($usersswhoreplied, $nstudentsperteam, "std_cost");
+        } else {
+            return [false, "Unknown matching algorithm", []]; // TODO: Internationalization
+        }
     }
 
     usort($teams, function ($a, $b) {
         return $a->get_cognitive_variance() <=> $b->get_cognitive_variance();
     });
 
+    // We create random teams with students that haven't replied
+    $teams = array_merge(
+        $teams,
+        generate_random_teams($userswhohaventreplied, $nstudentsperteam)
+    );
+
     return [true, '', json_encode($teams)];
+}
+
+function seperateuserswhohaventreplied($coursemodule, $users): array
+{
+    global $DB;
+    $allmbtianswers = $DB->get_records('polyteam_mbti', array('moduleid' => $coursemodule->id));
+
+    $usersswhoreplied = [];
+    $userswhohaventreplied = [];
+    foreach ($users as $user) {
+        $studentreplied = false;
+        foreach ($allmbtianswers as $mbtianswer) {
+            if ($user->id === $mbtianswer->userid) {
+                $studentreplied = true;
+                break;
+            }
+        }
+        if ($studentreplied) {
+            // TODO: Agree on $mbtianswer fields
+            // $fm = new FormMetrics(
+            //     intval($mbtianswer->ei),
+            //     intval($mbtianswer->jp),
+            //     intval($mbtianswer->sn),
+            //     intval($mbtianswer->tf)
+            // );
+            $fm = generate_one_fake_form_metrics(0.5, 0.5, 0.5, 0.5);
+            $usersswhoreplied[] = new Student($user, $fm);
+        } else {
+            // $fm = generate_one_fake_form_metrics(0.5, 0.5, 0.5, 0.5),
+            $fm = new FormMetrics(0, 0, 0, 0);
+            $userswhohaventreplied[] = new Student($user, $fm);
+        }
+    }
+
+    return [$usersswhoreplied, $userswhohaventreplied];
 }
 
 /**
  * @throws coding_exception
  * @throws moodle_exception
  */
-function create_teams($course, string $groupingid, array $generatedteams): array {
+function create_teams($course, string $groupingid, array $generatedteams): array
+{
     $group_name_prefix = "MBTI_";
     $grouping = null;
     if ($groupingid != "all") {
@@ -693,16 +742,16 @@ function create_teams($course, string $groupingid, array $generatedteams): array
 
     foreach ($generatedteams as $i => $generatedteam) {
         $groupid = groups_create_group(
-            (object) array(
-                'name'=>$group_name_prefix . sprintf("%02d", $i + 1),
-                'courseid'=>$course->id
+            (object)array(
+                'name' => $group_name_prefix . sprintf("%02d", $i + 1),
+                'courseid' => $course->id
             )
         );
         if (!$groupid) {
             return [false, "Enable to create one or more group"];
         }
         foreach ($generatedteam->students as $student) {
-            if(!groups_add_member($groupid, $student->user->id)) {
+            if (!groups_add_member($groupid, $student->user->id)) {
                 return [false, "Enable to add one or more student to a group"];
             }
         }

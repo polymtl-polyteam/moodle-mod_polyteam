@@ -159,7 +159,7 @@ export const displayTeams = () => {
             return (yLeft(stackedData[i][0][0]) + yLeft(stackedData[i][0][1])) / 2;
         })
         .attr("font-weight", "bold")
-        .attr("font-size", `${Math.min(x.bandwidth() / 2)}px`)
+        .attr("font-size", `${Math.min(x.bandwidth() / 2, 35)}px`)
         .attr("fill", "white");
 
     svg.append("g")

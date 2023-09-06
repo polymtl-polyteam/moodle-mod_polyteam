@@ -107,7 +107,7 @@ if ($fromform = $mform->get_data()) {
         $matchingstrategy = $fromform->matchingstrategy;
         $grouping = $fromform->grouping;
         list($teamshavebeengenerated, $errorwhilegeneratingteams, $generatedteams) = generate_teams(
-            $course, $nstudentsperteam, $matchingstrategy, $grouping
+            $course, $cm, $nstudentsperteam, $matchingstrategy, $grouping
         );
         $teamshavebeencreated = false;
     } else if ($submittedbutton == 'Create teams') {
