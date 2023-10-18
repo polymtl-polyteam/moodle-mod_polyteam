@@ -59,7 +59,7 @@ $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
 // Mark as viewed.
-$completion=new completion_info($course);
+$completion = new completion_info($course);
 $completion->set_module_viewed($cm);
 
 echo $OUTPUT->header();
@@ -77,6 +77,9 @@ if ($CFG->branch < 400) {
 
 $backtocourseurl = new moodle_url('/course/view.php', array('id' => $cm->course));
 
+$editquestionnaire = optional_param('e', 0, PARAM_INT);
+// Any arbitrary data assigned to e in the URL would result a PARAM_BOOL to be true, so we use a PARAM_INT instead.
+
 if ($moduleinstance->timeopen and time() < $moduleinstance->timeopen) { // First condition to check if timeopen != 0 (default).
     echo html_writer::tag('p', get_string('notopenyet', 'mod_polyteam', userdate($moduleinstance->timeopen)));
     echo html_writer::link(
@@ -84,33 +87,116 @@ if ($moduleinstance->timeopen and time() < $moduleinstance->timeopen) { // First
         get_string('backtocourse', 'mod_polyteam'),
         array('class' => 'btn btn-secondary')
     );
-} else if ($moduleinstance->timeclose and time() > $moduleinstance->timeclose) {
-    echo html_writer::tag('p', get_string('nowclosed', 'mod_polyteam', userdate($moduleinstance->timeclose)));
-    echo html_writer::link(
-        $backtocourseurl,
-        get_string('backtocourse', 'mod_polyteam'),
-        array('class' => 'btn btn-secondary')
-    );
-} else {
-    if (has_capability('mod/polyteam:answerquestionnaire', $modulecontext)) {
-        $mbtiurl = new moodle_url('/mod/polyteam/mbti.php', array('id' => $cm->id));
-        if (!$answer = $DB->get_record('polyteam_mbti', array('moduleid' => $cm->id, 'userid' => $USER->id))) {
-            echo html_writer::tag('p', get_string('notansweredyet', 'mod_polyteam'));
-            echo html_writer::link(
-                $mbtiurl,
-                get_string('fillinquestionnaire', 'mod_polyteam'),
-                array('class' => 'btn btn-secondary') // To format it as a bootstrap button.
-            );
+    // Replace by notice(get_string(...), $backtocourseurl) ? In notice, the redirect button has a 'Continue' label though.
+} else { 
+    // Date is either ok or too late.
+    if ($moduleinstance->timeclose and time() > $moduleinstance->timeclose) {
+        echo html_writer::tag('p', get_string('nowclosed', 'mod_polyteam', userdate($moduleinstance->timeclose)));
+        echo html_writer::link(
+            $backtocourseurl,
+            get_string('backtocourse', 'mod_polyteam'),
+            array('class' => 'btn btn-secondary')
+        );
+        // Forcing editquestionnaire=0 so that users cannot submit the questionnaire after expiration even with URL forgery.
+        $editquestionnaire = 0;
+    } else { // Date is ok.
+        // Setting the interface whether the user is allowed to answer or not.
+        if (has_capability('mod/polyteam:answerquestionnaire', $modulecontext)) {
+            if ($editquestionnaire == 0) { 
+                // Interface elements to reload the page in edit mode.
+
+                $editurl = new moodle_url('/mod/polyteam/view.php', array('id' => $cm->id, 'e' => 1));
+                if (!$answer = $DB->get_record('polyteam_mbti_ans', array('moduleid' => $cm->id, 'userid' => $USER->id))) {
+                    echo html_writer::tag('p', get_string('notansweredyet', 'mod_polyteam'));
+                    echo html_writer::link(
+                        $editurl,
+                        get_string('fillinquestionnaire', 'mod_polyteam'),
+                        array('class' => 'btn btn-secondary')
+                    );
+                } else {
+                    echo html_writer::tag('p',
+                        get_string('alreadyanswered', 'mod_polyteam', userdate($answer->timemodified))
+                    );
+                    echo html_writer::link(
+                        $editurl,
+                        get_string('editanswer', 'mod_polyteam'),
+                        array('class' => 'btn btn-secondary')
+                    );
+                }
+            } else {
+                // Interface in edit mode.
+                echo $OUTPUT->heading(get_string('mbtiquest', 'mod_polyteam'));
+                echo get_string('checkzerooneortwo', 'mod_polyteam');
+            }
         } else {
-            echo html_writer::tag('p',
-                get_string('alreadyanswered', 'mod_polyteam', userdate($answer->timemodified))
-            );
+            echo html_writer::tag('p', get_string('cantanswer', 'mod_polyteam'));
             echo html_writer::link(
-                $mbtiurl,
-                get_string('editanswer', 'mod_polyteam'),
+                $backtocourseurl,
+                get_string('backtocourse', 'mod_polyteam'),
                 array('class' => 'btn btn-secondary')
             );
+            $editquestionnaire = 0;
         }
+    }
+
+    // Displaying and processing form.
+
+    if ($recordans = $DB->get_record('polyteam_mbti_ans', array('moduleid' => $cm->id, 'userid' => $USER->id))){
+        $mform = new \mod_polyteam\form\mbti_form(null, array('id' => $cm->id, 'edit' => $editquestionnaire, 'prev' => $recordans));
+    } else {
+        $mform = new \mod_polyteam\form\mbti_form(null, array('id' => $cm->id, 'edit' => $editquestionnaire, 'prev' => array()));
+        $recordans = new stdClass;
+        $recordans->userid = $USER->id;
+        $recordans->moduleid = $cm->id;
+    }
+
+    if ($mform->is_cancelled()) {
+        redirect($backtocourseurl);
+    } else if ($d = $mform->get_data()) {
+        // Tendency towards opposite types.
+        $ei = $d->ei1e + $d->ei2e + $d->ei3e + $d->ei4e + $d->ei5e - ($d->ei1i + $d->ei2i + $d->ei3i + $d->ei4i + $d->ei5i);
+        $jp = $d->jp1j + $d->jp2j + $d->jp3j + $d->jp4j + $d->jp5j - ($d->jp1p + $d->jp2p + $d->jp3p + $d->jp4p + $d->jp5p);
+        $sn = $d->sn1s + $d->sn2s + $d->sn3s + $d->sn4s + $d->sn5s - ($d->sn1n + $d->sn2n + $d->sn3n + $d->sn4n + $d->sn5n);
+        $tf = $d->tf1t + $d->tf2t + $d->tf3t + $d->tf4t + $d->tf5t - ($d->tf1f + $d->tf2f + $d->tf3f + $d->tf4f + $d->tf5f);
+
+        if (!$recordpers = $DB->get_record('polyteam_mbti_pers', array('moduleid' => $cm->id, 'userid' => $USER->id))) {
+            $recordpers = new stdClass;
+            $recordpers->userid = $USER->id;
+            $recordpers->moduleid = $cm->id;
+        }
+
+        $t = time(); // To put the same time in both records.
+        $recordpers->timemodified = $t;
+        $recordans->timemodified = $t;
+
+        // Dumping answers in mbti_ans.
+        foreach (get_object_vars($d) as $key => $val) {
+            if ($key != 'id' && $key != 'edit' && strlen($key) < 5) {
+                $recordans->$key = $d->$key;
+            }
+        }
+
+        if ($DB->record_exists('polyteam_mbti_ans', array('moduleid' => $cm->id, 'userid' => $USER->id))) {
+            $DB->update_record('polyteam_mbti_ans', $recordans);
+        } else {
+            $DB->insert_record('polyteam_mbti_ans', $recordans);
+        }
+
+        // Computations by Doug Wilde (2008).
+        $recordpers->es = $ei + $jp + 2 * $sn; // IN = - ES.
+        $recordpers->en = $ei + $jp - 2 * $sn; // IS = - EN.
+        $recordpers->et = $ei + $jp + 2 * $tf; // IF = - ET.
+        $recordpers->ef = $ei + $jp - 2 * $tf; // IT = - EF.
+
+        if ($DB->record_exists('polyteam_mbti_pers', array('moduleid' => $cm->id, 'userid' => $USER->id))) {
+            $DB->update_record('polyteam_mbti_pers', $recordpers);
+        } else {
+            $DB->insert_record('polyteam_mbti_pers', $recordpers);
+        }
+
+        redirect($PAGE->url);
+    } else {
+        $mform->display();
     }
 }
 
