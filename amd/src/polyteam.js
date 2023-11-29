@@ -24,6 +24,7 @@ export const displayTeams = () => {
             }, {});
         })
     ];
+    const matchingStrategies = ['Ideal', ...new Set(generatedTeamsRaw.map(team => team['matching_strategy']))];
 
     // Stacked bar chart inspired from https://d3-graph-gallery.com/graph/barplot_stacked_basicWide.html
 
@@ -34,7 +35,7 @@ export const displayTeams = () => {
     //     1000,
     //     Math.max(600, 25 * generatedTeams.length + (cognitiveModes.length - 1) * 5)
     // );
-    const margin = {top: 10, right: 50, bottom: 50, left: 50},
+    const margin = {top: 20, right: 50, bottom: 50, left: 50},
         width = parentWidth - margin.left - margin.right, // TODO: Adjust width with bars
         height = 400 - margin.top - margin.bottom;
 
@@ -47,9 +48,57 @@ export const displayTeams = () => {
         .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
 
-
     // TODO : Internationalisation
     const labels = generatedTeams.map((_, index) => index === 0 ? "Ideal" : `${index}`);
+
+    // Legend
+    // Append legend items to SVG
+    const markersColors = d3.scaleOrdinal()
+        .domain(matchingStrategies)
+        .range(["burlywood", "black", "chocolate"]);
+    var legend = svg.selectAll(".legend")
+        .data(matchingStrategies)
+        .enter()
+        .append("g")
+        .attr("class", "legend");
+
+    legend.append("circle")
+        .attr("cx", 20)
+        .attr("cy", 10)
+        .attr("r", 6)
+        .style("fill", function (d) {
+            return markersColors(d);
+        });
+
+    legend.append("text")
+        .attr("x", 40)
+        .attr("y", 10)
+        .attr("dy", ".35em")
+        .text(function (d) {
+            return d;
+        })
+        .style("fill", function (d) {
+            return markersColors(d);
+        });
+
+    // Calculate total width of all legend items
+    var legendItems = document.querySelectorAll(".legend");
+    var totalWidth = 0;
+    legendItems.forEach(function (item) {
+        totalWidth += item.getBBox().width;
+    });
+
+    // Define padding between legend items
+    var padding = 40;
+
+    // Adjust position of legend items
+    var startX = (width - totalWidth - padding * (matchingStrategies.length - 1)) / 2;
+    var previousWidth = 0;
+    legend.attr("transform", function (d, i) {
+        previousWidth += i === 0 ? 0 : legendItems[i - 1].getBBox().width;
+        var xPos = startX + previousWidth + (i * padding);
+        return "translate(" + xPos + `, ${-margin.top})`;
+    });
 
     // Add X axis
     let x = d3.scaleBand()
@@ -175,6 +224,11 @@ export const displayTeams = () => {
             return yRight(d);
         })
         .attr("r", Math.min(5, x.bandwidth() * 0.45))
-        .style("fill", "black");
+        .style("fill", function (_, i) {
+            if (i === 0) {
+                return markersColors("Ideal");
+            }
+            return markersColors(generatedTeamsRaw[i - 1]["matching_strategy"]);
+        });
 
 };

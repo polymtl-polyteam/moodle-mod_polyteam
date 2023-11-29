@@ -24,9 +24,13 @@
 
 namespace mod_polyteam\form;
 
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
+require_once(__DIR__ . '/../../helpers/build_constants.php');
+
+use MatchingStrategy;
 
 // TODO : Internationalization
 // TODO : Refactor random matching to enum ?
@@ -56,11 +60,11 @@ class generate_teams_form extends \moodleform
         $mform->setExpanded('generateteamsheader');
 
         $buttons = array();
-        $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', 'Random match', 'randommatching');
-        $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', 'Fast matching', 'fastmatching');
-        $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', 'Maximize the number of perfect teams', 'simulatedannealingsum');
-        $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', 'Minimize area under cognitive curve', 'simulatedannealingsse');
-        $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', 'Minimize cognitive differences between teams', 'simulatedannealingstd');
+        $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', 'Random match', MatchingStrategy::RandomMatching);
+        $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', 'Fast matching', MatchingStrategy::FastMatching);
+        $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', 'Maximize the number of perfect teams', MatchingStrategy::SimulatedAnnealingSum);
+        $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', 'Minimize area under cognitive curve', MatchingStrategy::SimulatedAnnealingSse);
+        $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', 'Minimize cognitive differences between teams', MatchingStrategy::SimulatedAnnealingStd);
         $mform->addGroup($buttons, 'matchingstrategy', 'Matching strategy', ['<br>'], false);
         $mform->setDefault('matchingstrategy', $this->_customdata['matchingstrategy']);
         $mform->addHelpButton('matchingstrategy', 'matchingstrategy', 'mod_polyteam');

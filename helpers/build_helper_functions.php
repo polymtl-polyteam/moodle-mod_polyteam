@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-//require(__DIR__ . '/../../config.php');
+require_once(__DIR__ . '/build_constants.php');
 
 class CognitiveMode
 {
@@ -223,7 +223,9 @@ class Team implements JsonSerializable
     private array $cognitive_modes_counter = [];
     private float $cognitive_variance;
 
-    public function __construct($students = [])
+    private string $matching_strategy;
+
+    public function __construct($students = [], $matching_strategy = MatchingStrategy::Unknown)
     {
         $this->students = $students;
         $this->cognitive_modes_counter = get_new_cognitive_mode_counter();
@@ -233,6 +235,8 @@ class Team implements JsonSerializable
             }
         }
         $this->cognitive_variance = get_variance_from_cognitive_modes_counter($this->cognitive_modes_counter);
+
+        $this->matching_strategy = $matching_strategy;
     }
 
     public function add_student(Student $student): void
@@ -264,12 +268,18 @@ class Team implements JsonSerializable
         return count($this->students);
     }
 
+    public function set_matching_strategy(string $matching_strategy)
+    {
+        $this->matching_strategy = $matching_strategy;
+    }
+
     public function jsonSerialize(): array
     {
         return [
             "students" => $this->students,
             "cognitive_modes_counter" => $this->cognitive_modes_counter,
-            "cognitive_variance" => $this->cognitive_variance
+            "cognitive_variance" => $this->cognitive_variance,
+            "matching_strategy" => $this->matching_strategy
         ];
     }
 }
@@ -650,7 +660,7 @@ function generate_teams($course, $coursemodule, int $nstudentsperteam, string $s
         $students = array_map(function ($user) {
             return new Student($user, new FormMetrics(0, 0, 0, 0));
         }, $users);
-        return [True, "", new Team($students)];
+        return [True, "", new Team($students, $strategy)];
     }
 
     list($usersswhoreplied, $userswhohaventreplied) =
@@ -658,32 +668,37 @@ function generate_teams($course, $coursemodule, int $nstudentsperteam, string $s
 
     if (count($usersswhoreplied) == 0) {
         $teams = [];
+    } elseif ($strategy == MatchingStrategy::RandomMatching) {
+        $teams = generate_random_teams($usersswhoreplied, $nstudentsperteam);
+    } elseif ($strategy == MatchingStrategy::FastMatching) {
+        $teams = generate_greedily_teams($usersswhoreplied, $nstudentsperteam, "sse_cost");
+    } elseif ($strategy == MatchingStrategy::SimulatedAnnealingSum) {
+        $teams = generate_teams_with_simulated_annealing($usersswhoreplied, $nstudentsperteam, "sum_cost");
+    } elseif ($strategy == MatchingStrategy::SimulatedAnnealingSse) {
+        $teams = generate_teams_with_simulated_annealing($usersswhoreplied, $nstudentsperteam, "sse_cost");
+    } elseif ($strategy == MatchingStrategy::SimulatedAnnealingStd) {
+        $teams = generate_teams_with_simulated_annealing($usersswhoreplied, $nstudentsperteam, "std_cost");
     } else {
-        if ($strategy == "randommatching") {
-            $teams = generate_random_teams($usersswhoreplied, $nstudentsperteam);
-        } elseif ($strategy == "fastmatching") {
-            $teams = generate_greedily_teams($usersswhoreplied, $nstudentsperteam, "sse_cost");
-        } elseif ($strategy == "simulatedannealingsum") {
-            $teams = generate_teams_with_simulated_annealing($usersswhoreplied, $nstudentsperteam, "sum_cost");
-        } elseif ($strategy == "simulatedannealingsse") {
-            $teams = generate_teams_with_simulated_annealing($usersswhoreplied, $nstudentsperteam, "sse_cost");
-        } elseif ($strategy == "simulatedannealingstd") {
-            $teams = generate_teams_with_simulated_annealing($usersswhoreplied, $nstudentsperteam, "std_cost");
-        } else {
-            return [false, "Unknown matching algorithm", []]; // TODO: Internationalization
-        }
+        return [false, "Unknown matching algorithm", []]; // TODO: Internationalization
     }
+
 
     usort($teams, function ($a, $b) {
         return $a->get_cognitive_variance() <=> $b->get_cognitive_variance();
     });
 
-    // We create random teams with students that haven't replied
-    $teams = array_merge(
-        $teams,
-        generate_random_teams($userswhohaventreplied, $nstudentsperteam)
-    );
+    foreach ($teams as $team) {
+        $team->set_matching_strategy($strategy);
+    }
 
+    $randomteams = generate_random_teams($userswhohaventreplied, $nstudentsperteam);
+    foreach ($randomteams as $team) {
+        $team->set_matching_strategy(MatchingStrategy::RandomMatching);
+    }
+
+    // We create random teams with students that haven't replied
+    $teams = array_merge($teams, $randomteams);
+    
     return [true, '', json_encode($teams)];
 }
 

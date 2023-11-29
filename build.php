@@ -25,7 +25,7 @@ global $DB, $PAGE, $OUTPUT;
 
 require(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
-require_once(__DIR__ . '/build_custom_functions.php');
+require_once(__DIR__ . '/helpers/build_helper_functions.php');
 
 
 // Course module id.
