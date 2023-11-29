@@ -498,13 +498,16 @@ function generate_teams_with_simulated_annealing(
 
     // Initialize the current solution with the initial state
     $current_solution = generate_greedily_teams($students, $team_size);
+    if (count($current_solution) <= 1) {
+        return $current_solution;
+    }
     $current_sse = $cost_fn($current_solution);
     $best_solution = $current_solution;
     $best_sse = $current_sse;
 
     $n_teams = ceil(count($students) / $team_size);
-    $maximal_number_of_sol = $n_teams * ($n_teams - 1) / 2; # Total number of groups of 2
-    $n_neighbor_to_generate = min(50, $maximal_number_of_sol);
+    $maximal_number_of_neighbour_sol = $n_teams * ($n_teams - 1) / 2; # Total number of groups of 2
+    $n_neighbor_to_generate = min(50, $maximal_number_of_neighbour_sol);
     while ($current_temp > $stopping_temperature) {
         $neighbor_sols_and_costs = [];
         for ($i = 0; $i < $n_neighbor_to_generate; $i++) {

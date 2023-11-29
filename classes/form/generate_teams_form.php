@@ -46,6 +46,7 @@ class generate_teams_form extends \moodleform
      */
     public function definition()
     {
+        global $OUTPUT;
         $mform = $this->_form;
 
         $mform->addElement('hidden', 'id', $this->_customdata['id']); // Course module id.
@@ -60,8 +61,9 @@ class generate_teams_form extends \moodleform
         $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', 'Maximize the number of perfect teams', 'simulatedannealingsum');
         $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', 'Minimize area under cognitive curve', 'simulatedannealingsse');
         $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', 'Minimize cognitive differences between teams', 'simulatedannealingstd');
-        $mform->addGroup($buttons, 'matchingstrategyar', 'Choose team matching strategy', array(' '), false);
+        $mform->addGroup($buttons, 'matchingstrategy', 'Matching strategy', ['<br>'], false);
         $mform->setDefault('matchingstrategy', $this->_customdata['matchingstrategy']);
+        $mform->addHelpButton('matchingstrategy', 'matchingstrategy', 'mod_polyteam');
 
         $teamssizeoptions = array();
         for ($i = 2; $i <= 25; $i++) {
@@ -69,6 +71,7 @@ class generate_teams_form extends \moodleform
         }
         $select = $mform->addElement('select', 'nstudentsperteam', 'Teams size', $teamssizeoptions);
         $select->setSelected($this->_customdata['nstudentsperteam']);
+        $mform->addHelpButton('nstudentsperteam', 'nstudentsperteam', 'mod_polyteam');
 
         $allgroupingssoptions = ["all" => "All students"];
         foreach ($this->get_or_default('allgroupings', []) as $grouping) {
@@ -76,8 +79,11 @@ class generate_teams_form extends \moodleform
         }
         $select = $mform->addElement('select', 'grouping', 'Grouping', $allgroupingssoptions);
         $select->setSelected($this->_customdata['grouping']);
+        $mform->addHelpButton('grouping', 'grouping', 'mod_polyteam');
 
-        $mform->addElement('submit', 'submitbutton', 'Generate teams');
+        $submitbutton = $mform->createElement('submit', 'submitbutton', 'Generate teams');
+        $mform->addGroup([$submitbutton], 'generateteams', '', array(' '), false);
+        $mform->addHelpButton('generateteams', 'generateteams', 'mod_polyteam');
 
         $teamshavebeengenerated = $this->get_or_default('teamshavebeengenerated', false);
         if ($teamshavebeengenerated) {
@@ -91,7 +97,9 @@ class generate_teams_form extends \moodleform
             if ($teamshavebeencreated) {
                 $mform->addElement('html', '<div class="alert alert-success">Teams have already been created for the following configuration.</div>');
             } else {
-                $mform->addElement('submit', 'submitbutton', 'Create teams');
+                $submitbutton = $mform->createElement('submit', 'submitbutton', 'Create teams');
+                $mform->addGroup([$submitbutton], 'createteams', '', array(' '), false);
+                $mform->addHelpButton('createteams', 'createteams', 'mod_polyteam');
             }
         }
     }

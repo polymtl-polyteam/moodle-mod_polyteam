@@ -55,10 +55,11 @@ $allmbtianswerscount = $DB->get_record_sql(
     'SELECT COUNT(*) AS rowcount FROM {polyteam_mbti} WHERE moduleid = ?',
     [$cm->id]
 )->rowcount;
+$nstudents = count_enrolled_users($modulecontext, 'mod/assign:submit');
 $allgroupings = groups_get_all_groupings($course->id);
 
 echo html_writer::div(
-    html_writer::tag('p', 'Number of questionnaire responses: ' . $allmbtianswerscount),
+    html_writer::tag('p', 'Response rate for the questionnaire: ' . $allmbtianswerscount . ' out of ' . $nstudents),
     "text-center"
 );
 $mainurl = (new moodle_url('/mod/polyteam/build.php', array('id' => $cm->id)))->out();
