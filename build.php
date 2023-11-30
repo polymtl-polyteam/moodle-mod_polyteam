@@ -1,4 +1,5 @@
-<?php
+<?php /** @noinspection PhpUnhandledExceptionInspection */
+/** @noinspection SpellCheckingInspection */
 // This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -13,7 +14,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
-global $DB, $PAGE, $OUTPUT;
 
 /**
  * Build teams based on questionnaire answers.
@@ -26,46 +26,46 @@ global $DB, $PAGE, $OUTPUT;
 require(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
 require_once(__DIR__ . '/helpers/build_helper_functions.php');
+require_once(__DIR__ . '/classes/form/build_teams_form.php');
 
+global $DB, $PAGE, $OUTPUT;
 
-// Course module id.
-$id = optional_param('id', 0, PARAM_INT);
+// Course module
+$cm_id = optional_param('id', 0, PARAM_INT);
+$cm = get_coursemodule_from_id('polyteam', $cm_id, 0, false, MUST_EXIST);
 
-
-$cm = get_coursemodule_from_id('polyteam', $id, 0, false, MUST_EXIST);
+// Course
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-$moduleinstance = $DB->get_record('polyteam', array('id' => $cm->instance), '*', MUST_EXIST);
+$cminstance = $DB->get_record('polyteam', array('id' => $cm->instance), '*', MUST_EXIST);
 
 require_login($course, true, $cm);
 
 $modulecontext = context_module::instance($cm->id);
 
+// TODO: Change capability to a more appropriate one
 require_capability('mod/polyteam:viewanswers', $modulecontext);
 
-// Event ?
-
+// TODO: Event ?
 $PAGE->set_url('/mod/polyteam/build.php', array('id' => $cm->id));
-$PAGE->set_title(format_string($moduleinstance->name));
+$PAGE->set_title(format_string($cminstance->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
 echo $OUTPUT->header();
 
 $allmbtianswerscount = $DB->get_record_sql(
-    'SELECT COUNT(*) AS rowcount FROM {polyteam_mbti} WHERE moduleid = ?',
-    [$cm->id]
+        'SELECT COUNT(*) AS rowcount FROM {polyteam_mbti} WHERE moduleid = ?',
+        [$cm->id]
 )->rowcount;
+
+// Display the form response rate
 $nstudents = count_enrolled_users($modulecontext, 'mod/assign:submit');
-$allgroupings = groups_get_all_groupings($course->id);
+$responseratestr = get_string('mbtiresponserate', 'mod_polyteam', ['count' => $allmbtianswerscount, 'total' => $nstudents]);
+echo html_writer::div(html_writer::tag('p', $responseratestr), "text-center");
 
-echo html_writer::div(
-    html_writer::tag('p', 'Response rate for the questionnaire: ' . $allmbtianswerscount . ' out of ' . $nstudents),
-    "text-center"
-);
-$mainurl = (new moodle_url('/mod/polyteam/build.php', array('id' => $cm->id)))->out();
-
+// The page has two form. A first one to generate teams and a second one to create them.
+// We save form date in polyteam_build_cache table.
 $formcustomdatacache = $DB->get_record('polyteam_build_cache', ['moduleid' => $cm->id]);
-
 if ($formcustomdatacache) {
     $cachedata = json_decode($formcustomdatacache->data);
     $nstudentsperteam = $cachedata->nstudentsperteam;
@@ -87,46 +87,48 @@ if ($formcustomdatacache) {
     $errorwhilecreatingteams = '';
 }
 
-$mform = new \mod_polyteam\form\generate_teams_form(
-    $mainurl,
-    array(
-        'id' => $cm->id,
-        'nstudentsperteam' => $nstudentsperteam,
-        'matchingstrategy' => $matchingstrategy,
-        'grouping' => $grouping,
-        'allgroupings' => $allgroupings,
-        'teamshavebeengenerated' => $teamshavebeengenerated,
-        'generatedteams' => $generatedteams,
-        'teamshavebeencreated' => $teamshavebeencreated
-    )
+$allgroupings = groups_get_all_groupings($course->id);
+$mainurl = (new moodle_url('/mod/polyteam/build.php', array('id' => $cm->id)))->out();
+$mform = new \mod_polyteam\form\build_teams_form(
+        $mainurl,
+        array(
+                'id' => $cm->id,
+                'nstudentsperteam' => $nstudentsperteam,
+                'matchingstrategy' => $matchingstrategy,
+                'grouping' => $grouping,
+                'allgroupings' => $allgroupings,
+                'teamshavebeengenerated' => $teamshavebeengenerated,
+                'generatedteams' => $generatedteams,
+                'teamshavebeencreated' => $teamshavebeencreated
+        )
 );
 
 if ($fromform = $mform->get_data()) {
     $submittedbutton = $fromform->submitbutton;
-    if ($submittedbutton == 'Generate teams') {
+    if ($submittedbutton == get_string('generateteams', 'mod_polyteam')) {
         $nstudentsperteam = $fromform->nstudentsperteam;
         $matchingstrategy = $fromform->matchingstrategy;
         $grouping = $fromform->grouping;
         list($teamshavebeengenerated, $errorwhilegeneratingteams, $generatedteams) = generate_teams(
-            $course, $cm, $nstudentsperteam, $matchingstrategy, $grouping
+                $course, $cm, $nstudentsperteam, $matchingstrategy, $grouping
         );
         $teamshavebeencreated = false;
-    } else if ($submittedbutton == 'Create teams') {
+    } else if ($submittedbutton == get_string('createteams', 'mod_polyteam')) {
         list($teamshavebeencreated, $errorwhilecreatingteams) = create_teams(
-            $course, $grouping, json_decode($generatedteams)
+                $course, $grouping, json_decode($generatedteams)
         );
     }
-    $record = new stdClass;
+    $record = new stdClass();
     $record->moduleid = $cm->id;
     $record->data = json_encode([
-        'nstudentsperteam' => $nstudentsperteam,
-        'matchingstrategy' => $matchingstrategy,
-        'grouping' => $grouping,
-        'errorwhilegeneratingteams' => $errorwhilegeneratingteams,
-        'teamshavebeengenerated' => $teamshavebeengenerated,
-        'generatedteams' => $generatedteams,
-        'teamshavebeencreated' => $teamshavebeencreated,
-        'errorwhilecreatingteams' => $errorwhilecreatingteams
+            'nstudentsperteam' => $nstudentsperteam,
+            'matchingstrategy' => $matchingstrategy,
+            'grouping' => $grouping,
+            'errorwhilegeneratingteams' => $errorwhilegeneratingteams,
+            'teamshavebeengenerated' => $teamshavebeengenerated,
+            'generatedteams' => $generatedteams,
+            'teamshavebeencreated' => $teamshavebeencreated,
+            'errorwhilecreatingteams' => $errorwhilecreatingteams
     ]);
     if ($formcustomdatacache) {
         $record->id = $formcustomdatacache->id;
@@ -134,32 +136,46 @@ if ($fromform = $mform->get_data()) {
     } else {
         $DB->insert_record('polyteam_build_cache', $record);
     }
-    $mform = new \mod_polyteam\form\generate_teams_form(
-        $mainurl,
-        array(
-            'id' => $cm->id,
-            'nstudentsperteam' => $nstudentsperteam,
-            'matchingstrategy' => $matchingstrategy,
-            'grouping' => $grouping,
-            'allgroupings' => $allgroupings,
-            'teamshavebeengenerated' => $teamshavebeengenerated,
-            'generatedteams' => $generatedteams,
-            'teamshavebeencreated' => $teamshavebeencreated
-        )
+    $mform = new \mod_polyteam\form\build_teams_form(
+            $mainurl,
+            array(
+                    'id' => $cm->id,
+                    'nstudentsperteam' => $nstudentsperteam,
+                    'matchingstrategy' => $matchingstrategy,
+                    'grouping' => $grouping,
+                    'allgroupings' => $allgroupings,
+                    'teamshavebeengenerated' => $teamshavebeengenerated,
+                    'generatedteams' => $generatedteams,
+                    'teamshavebeencreated' => $teamshavebeencreated
+            )
     );
 }
 
 if ($errorwhilegeneratingteams != "") {
-    echo html_writer::div($errorwhilegeneratingteams, 'alert alert-danger');
+    $errorstr = get_string($errorwhilegeneratingteams, 'mod_polyteam');
+    echo html_writer::div($errorstr, 'alert alert-danger');
 }
 
 if ($errorwhilecreatingteams != "") {
-    echo html_writer::div($errorwhilecreatingteams, 'alert alert-danger');
+    $errorstr = get_string($errorwhilecreatingteams, 'mod_polyteam');
+    echo html_writer::div($errorstr, 'alert alert-danger');
 }
 
+// We transmit data into the DOM which is then utilized by JavaScript to generate the cognitive chart.
 echo html_writer::div('', 'hidden', [
-    "id" => "generatedteams",
-    "data-generatedteams" => $generatedteams
+        'id' => 'generatedteams',
+        'data-generatedteams' => $generatedteams,
+        'data-strings' => json_encode([
+                'ideal' => get_string('ideal', 'mod_polyteam'),
+                'teams' => get_string('teams', 'mod_polyteam'),
+                'cognitivemodesproportions' => get_string('cognitivemodesproportions', 'mod_polyteam'),
+                'standarddeviation' => get_string('standarddeviation', 'mod_polyteam'),
+                MatchingStrategy::RandomMatching => get_string(MatchingStrategy::RandomMatching, 'mod_polyteam'),
+                MatchingStrategy::FastMatching => get_string(MatchingStrategy::FastMatching, 'mod_polyteam'),
+                MatchingStrategy::SimulatedAnnealingSum => get_string(MatchingStrategy::SimulatedAnnealingSum, 'mod_polyteam'),
+                MatchingStrategy::SimulatedAnnealingSse => get_string(MatchingStrategy::SimulatedAnnealingSse, 'mod_polyteam'),
+                MatchingStrategy::SimulatedAnnealingStd => get_string(MatchingStrategy::SimulatedAnnealingStd, 'mod_polyteam'),
+        ])
 ]);
 
 $mform->display();

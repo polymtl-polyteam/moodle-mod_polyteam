@@ -25,6 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(__DIR__ . '/../../helpers/build_constants.php');
+
 $string['pluginname'] = 'PolyTeam';
 
 $string['modulename'] = 'PolyTeam';
@@ -32,7 +34,8 @@ $string['modulenameplural'] = 'PolyTeam modules'; // Used in instance list view.
 
 // Config.
 $string['pluginadministration'] = 'PolyTeam administration'; // Mostly here because this string is required. Never used though.
-$string['modulename_help'] = 'PolyTeam is a tool to assign students to Moodle groups based on their answers to a personnality questionnaire such as Myers-Briggs Type Indicator.';
+$string['modulename_help'] =
+        'PolyTeam is a tool to assign students to Moodle groups based on their answers to a personnality questionnaire such as Myers-Briggs Type Indicator.';
 // TODO : expand modulename_help as we add new features.
 $string['polyteamname'] = 'Name';
 
@@ -104,15 +107,41 @@ $string['merciful'] = 'merciful';
 
 // Capabilities.
 
-
 // Build page
-$string['matchingstrategy'] = 'Matching strategy';
-$string['matchingstrategy_help'] = 'The ***Matching strategy*** refers to the algorithm utilized for team composition. The ***Random match*** approach pairs students arbitrarily, disregarding their cognitive profiles. The ***Fast matching*** algorithm is a straightforward and swift method that sequentially places students in a team where their inclusion would minimize the team’s cognitive variance. The ***Maximize the number of perfect teams*** strategy employs a heuristic algorithm geared towards creating the maximum number of ‘perfect’ teams, defined as teams with a cognitive variance of zero. The ***Minimize area under cognitive curve*** strategy uses a heuristic algorithm designed to reduce the area under all teams’ cognitive variance trends as much as possible. Lastly, the ***Minimize cognitive differences between teams*** strategy uses a heuristic algorithm aimed at equalizing the cognitive variance among all teams.';
-$string['nstudentsperteam'] = 'Teams size';
-$string['nstudentsperteam_help'] = 'This is the maximum number of students per team. All teams will adhere to this size, with potentially two exceptions. There may be one smaller team composed of students who responded, and another smaller one made up of those who did not respond.';
-$string['grouping'] = 'Grouping';
-$string['grouping_help'] = 'The Moodle grouping for which you wish to generate teams should be selected. Created teams will be labelled as MBTI_&lt;grouping_name&gt;_&lt;team_number&gt;. If you wish to create teams for all groupings, please select the <b><i>All students</i></b> option.';
+$string['mbtiresponserate'] = 'Response rate for the MBTI questionnaire: {$a->count} out of {$a->total}';
 $string['generateteams'] = 'Generate teams';
-$string['generateteams_help'] = 'The ***Generate teams*** action button will formulate prospective teams based on the selected matching strategy, designated team size, and defined grouping. This action takes into account the responses from students who have completed the MBTI form and matches them together using the selected strategy. Students who have not replied to the MBTI form, however, will be matched randomly. Each time you use this action, the suggested teams can change, providing you with various team configurations. This action should be used as many times as needed until a suitable configuration is achieved. Please note that these are only potential team compositions and they are not created within Moodle at this stage. The proposed teams will be displayed below after each generation. Once you have a satisfactory team configuration, you can officially create and establish these generated teams within Moodle using the ***Create teams*** action button.';
 $string['createteams'] = 'Create teams';
-$string['createteams_help'] = 'The <b><i>Create teams</b></i> action button facilitates the creation of the suggested teams within Moodle. When this action is initiated, any existing teams associated with the selected grouping will be removed. They will then be superseded by the new teams generated from the most recent configuration. <u><b>Please note that this action finalizes the team setup, replacing old teams with the newly proposed ones</b></u>.';
+$string['errornotenoughstudents'] = 'Not enough students to generate teams';
+$string['errorunknownalgo'] = 'Unknown matching algorithm';
+$string['errorunabletocreategroup'] = 'Enable to create one or more group';
+$string['errorenabletoaddstudenttogroup'] = 'Enable to add one or more student to a group';
+$string['errorenableassigngrouping'] = 'Enable to assign one or more grouping to a group';
+$string[MatchingStrategy::RandomMatching] = 'Random match';
+$string[MatchingStrategy::FastMatching] = 'Fast matching';
+$string[MatchingStrategy::SimulatedAnnealingSum] = 'Maximize the number of perfect teams';
+$string[MatchingStrategy::SimulatedAnnealingSse] = 'Minimize area under cognitive curve';
+$string[MatchingStrategy::SimulatedAnnealingStd] = 'Minimize cognitive differences between teams';
+$string['teamssize'] = 'Teams size';
+$string['allstudents'] = 'All students';
+$string['teamsalreadygenerated'] = 'Teams have already been created for the following configuration.';
+$string['ideal'] = 'Ideal';
+$string['teams'] = 'Teams';
+$string['cognitivemodesproportions'] = 'Cognitive mode proportions (%)';
+$string['standarddeviation'] = 'Standard deviation (markers)';
+
+
+$string['matchingstrategy'] = 'Matching strategy';
+$string['matchingstrategy_help'] =
+        'The ***Matching strategy*** refers to the algorithm utilized for team composition. The ***Random match*** approach pairs students arbitrarily, disregarding their cognitive profiles. The ***Fast matching*** algorithm is a straightforward and swift method that sequentially places students in a team where their inclusion would minimize the team’s cognitive variance. The ***Maximize the number of perfect teams*** strategy employs a heuristic algorithm geared towards creating the maximum number of ‘perfect’ teams, defined as teams with a cognitive variance of zero. The ***Minimize area under cognitive curve*** strategy uses a heuristic algorithm designed to reduce the area under all teams’ cognitive variance trends as much as possible. Lastly, the ***Minimize cognitive differences between teams*** strategy uses a heuristic algorithm aimed at equalizing the cognitive variance among all teams.';
+$string['nstudentsperteam'] = 'Teams size';
+$string['nstudentsperteam_help'] =
+        'This is the maximum number of students per team. All teams will adhere to this size, with potentially two exceptions. There may be one smaller team composed of students who responded, and another smaller one made up of those who did not respond.';
+$string['grouping'] = 'Grouping';
+$string['grouping_help'] =
+        'The Moodle grouping for which you wish to generate teams should be selected. Created teams will be labelled as MBTI_&lt;grouping_name&gt;_&lt;team_number&gt;. If you wish to create teams for all groupings, please select the <b><i>All students</i></b> option.';
+$string['generateteams'] = 'Generate teams';
+$string['generateteams_help'] =
+        'The ***Generate teams*** action button will formulate prospective teams based on the selected matching strategy, designated team size, and defined grouping. This action takes into account the responses from students who have completed the MBTI form and matches them together using the selected strategy. Students who have not replied to the MBTI form, however, will be matched randomly. Each time you use this action, the suggested teams can change, providing you with various team configurations. This action should be used as many times as needed until a suitable configuration is achieved. Please note that these are only potential team compositions and they are not created within Moodle at this stage. The proposed teams will be displayed below after each generation. Once you have a satisfactory team configuration, you can officially create and establish these generated teams within Moodle using the ***Create teams*** action button.';
+$string['createteams'] = 'Create teams';
+$string['createteams_help'] =
+        'The <b><i>Create teams</b></i> action button facilitates the creation of the suggested teams within Moodle. When this action is initiated, any existing teams associated with the selected grouping will be removed. They will then be superseded by the new teams generated from the most recent configuration. <u><b>Please note that this action finalizes the team setup, replacing old teams with the newly proposed ones</b></u>.';

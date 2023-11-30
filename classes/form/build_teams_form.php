@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * the mod_polyteam generate team form.
+ * the mod_polyteam build team form.
  *
  * @package     mod_polyteam
  * @copyright   2023 GIGL <...@polymtl.ca>
@@ -24,48 +24,50 @@
 
 namespace mod_polyteam\form;
 
-
 defined('MOODLE_INTERNAL') || die();
 
+global $CFG;
 require_once($CFG->libdir . '/formslib.php');
 require_once(__DIR__ . '/../../helpers/build_constants.php');
 
+use GroupingID;
 use MatchingStrategy;
 
 // TODO : Internationalization
 // TODO : Refactor random matching to enum ?
 
 /**
- * the mod_polyteam generate team form class.
+ * the mod_polyteam build team form class.
  *
  * @package     mod_polyteam
  * @copyright   2023 GIGL <...@polymtl.ca>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class generate_teams_form extends \moodleform
-{
+class build_teams_form extends \moodleform {
 
     /**
      * Add elements to form.
      */
-    public function definition()
-    {
+    public function definition() {
         global $OUTPUT;
         $mform = $this->_form;
 
         $mform->addElement('hidden', 'id', $this->_customdata['id']); // Course module id.
         $mform->setType('id', PARAM_INT);
 
-        $mform->addElement('header', 'generateteamsheader', 'Generate teams');
+        $mform->addElement('header', 'generateteamsheader', get_string('generateteams', 'mod_polyteam'));
         $mform->setExpanded('generateteamsheader');
 
         $buttons = array();
-        $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', 'Random match', MatchingStrategy::RandomMatching);
-        $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', 'Fast matching', MatchingStrategy::FastMatching);
-        $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', 'Maximize the number of perfect teams', MatchingStrategy::SimulatedAnnealingSum);
-        $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', 'Minimize area under cognitive curve', MatchingStrategy::SimulatedAnnealingSse);
-        $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', 'Minimize cognitive differences between teams', MatchingStrategy::SimulatedAnnealingStd);
-        $mform->addGroup($buttons, 'matchingstrategy', 'Matching strategy', ['<br>'], false);
+        $strategies = [MatchingStrategy::RandomMatching,
+                MatchingStrategy::FastMatching,
+                MatchingStrategy::SimulatedAnnealingSum,
+                MatchingStrategy::SimulatedAnnealingSse,
+                MatchingStrategy::SimulatedAnnealingStd];
+        foreach ($strategies as $strategy) {
+            $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', get_string($strategy, 'mod_polyteam'), $strategy);
+        }
+        $mform->addGroup($buttons, 'matchingstrategy', get_string('matchingstrategy', 'mod_polyteam'), ['<br>'], false);
         $mform->setDefault('matchingstrategy', $this->_customdata['matchingstrategy']);
         $mform->addHelpButton('matchingstrategy', 'matchingstrategy', 'mod_polyteam');
 
@@ -73,11 +75,11 @@ class generate_teams_form extends \moodleform
         for ($i = 2; $i <= 25; $i++) {
             $teamssizeoptions[$i] = $i;
         }
-        $select = $mform->addElement('select', 'nstudentsperteam', 'Teams size', $teamssizeoptions);
+        $select = $mform->addElement('select', 'nstudentsperteam', get_string('teamssize', 'mod_polyteam'), $teamssizeoptions);
         $select->setSelected($this->_customdata['nstudentsperteam']);
         $mform->addHelpButton('nstudentsperteam', 'nstudentsperteam', 'mod_polyteam');
 
-        $allgroupingssoptions = ["all" => "All students"];
+        $allgroupingssoptions = [GroupingID::All => get_string('allstudents', 'mod_polyteam')];
         foreach ($this->get_or_default('allgroupings', []) as $grouping) {
             $allgroupingssoptions[$grouping->id] = $grouping->name;
         }
@@ -85,31 +87,31 @@ class generate_teams_form extends \moodleform
         $select->setSelected($this->_customdata['grouping']);
         $mform->addHelpButton('grouping', 'grouping', 'mod_polyteam');
 
-        $submitbutton = $mform->createElement('submit', 'submitbutton', 'Generate teams');
+        $submitbutton = $mform->createElement('submit', 'submitbutton', get_string('generateteams', 'mod_polyteam'));
         $mform->addGroup([$submitbutton], 'generateteams', '', array(' '), false);
         $mform->addHelpButton('generateteams', 'generateteams', 'mod_polyteam');
 
         $teamshavebeengenerated = $this->get_or_default('teamshavebeengenerated', false);
         if ($teamshavebeengenerated) {
-            $this->_form->addElement('header', 'createteamsheader', 'Create teams');
+            $this->_form->addElement('header', 'createteamsheader', get_string('createteams', 'mod_polyteam'));
             $this->_form->setExpanded('createteamsheader');
 
-            // The chart get rendered in this div
+            // The chart get rendered in this div. Do not remove nor change ID
             $mform->addElement('html', '<div id="polyteamgeneratedteams"></div>');
 
             $teamshavebeencreated = $this->get_or_default('teamshavebeencreated', false);
             if ($teamshavebeencreated) {
-                $mform->addElement('html', '<div class="alert alert-success">Teams have already been created for the following configuration.</div>');
+                $mform->addElement('html',
+                        '<div class="alert alert-success">' . get_string('teamsalreadygenerated', 'mod_polyteam') . '</div>');
             } else {
-                $submitbutton = $mform->createElement('submit', 'submitbutton', 'Create teams');
+                $submitbutton = $mform->createElement('submit', 'submitbutton', get_string('createteams', 'mod_polyteam'));
                 $mform->addGroup([$submitbutton], 'createteams', '', array(' '), false);
                 $mform->addHelpButton('createteams', 'createteams', 'mod_polyteam');
             }
         }
     }
 
-    public function get_or_default($param, $default)
-    {
+    public function get_or_default($param, $default) {
         if (array_key_exists($param, $this->_customdata)) {
             return $this->_customdata[$param];
         }

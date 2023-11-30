@@ -34,3 +34,7 @@ class MatchingStrategy
     const SimulatedAnnealingSse = 'simulatedannealingsse';
     const SimulatedAnnealingStd = 'simulatedannealingstd';
 }
+
+class GroupingID {
+    const All = 'all';
+}
