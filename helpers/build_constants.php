@@ -25,16 +25,39 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-class MatchingStrategy
+class matching_strategy
 {
     const Unknown = 'unknown';
     const RandomMatching = 'randommatching';
+    const RandomMatchingWithNoCognitiveMode = 'randommatchingwithnocognitivemode';
     const FastMatching = 'fastmatching';
     const SimulatedAnnealingSum = 'simulatedannealingsum';
     const SimulatedAnnealingSse = 'simulatedannealingsse';
     const SimulatedAnnealingStd = 'simulatedannealingstd';
 }
 
-class GroupingID {
+class grouping_id {
     const All = 'all';
 }
+
+class cognitive_mode {
+    const ES = "cognitivemodees"; # Experimentation
+    const IS = "cognitivemodeis"; # Ideation
+    const EN = "cognitivemodeen"; # Knowledge
+    const IN = "cognitivemodein"; # Imagination
+    const ET = "cognitivemodeet"; # Organization
+    const IT = "cognitivemodeit"; # Community
+    const EF = "cognitivemodeef"; # Analysis
+    const IF = "cognitivemodeif"; # Evaluation
+}
+
+$ALL_COGNITIVE_MODES = [
+        cognitive_mode::ES,
+        cognitive_mode::IS,
+        cognitive_mode::EN,
+        cognitive_mode::IN,
+        cognitive_mode::ET,
+        cognitive_mode::IT,
+        cognitive_mode::EF,
+        cognitive_mode::IF
+];

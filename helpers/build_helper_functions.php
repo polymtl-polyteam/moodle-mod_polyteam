@@ -26,28 +26,6 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/build_constants.php');
 
-class cognitive_mode {
-    const ES = "ES"; # Experimentation
-    const IS = "IS"; # Ideation
-    const EN = "EN"; # Knowledge
-    const IN = "IN"; # Imagination
-    const ET = "ET"; # Organization
-    const IT = "IT"; # Community
-    const EF = "EF"; # Analysis
-    const IF = "IF"; # Evaluation
-}
-
-$ALL_COGNITIVE_MODES = [
-        cognitive_mode::ES,
-        cognitive_mode::IS,
-        cognitive_mode::EN,
-        cognitive_mode::IN,
-        cognitive_mode::ET,
-        cognitive_mode::IT,
-        cognitive_mode::EF,
-        cognitive_mode::IF
-];
-
 function get_new_cognitive_mode_counter(): array {
     global $ALL_COGNITIVE_MODES;
     return array_fill_keys($ALL_COGNITIVE_MODES, 0);
@@ -199,7 +177,7 @@ class team implements JsonSerializable {
 
     private string $matchingstrategy;
 
-    public function __construct($students = [], $matching_strategy = MatchingStrategy::Unknown) {
+    public function __construct($students = [], $matching_strategy = matching_strategy::Unknown) {
         $this->students = $students;
         $this->cognitivemodescounter = get_new_cognitive_mode_counter();
         foreach ($this->students as $student) {
@@ -479,7 +457,7 @@ function generate_teams_with_simulated_annealing(
 
 function generate_teams($course, $coursemodule, int $nstudentsperteam, string $strategy, string $groupingid): array {
     $ctx = context_course::instance($course->id);
-    if ($groupingid == GroupingID::All) {
+    if ($groupingid == grouping_id::All) {
         // TODO: Change capability to users that can answer the questionnaire
         $users = get_enrolled_users($ctx, 'mod/assign:submit');
     } else {
@@ -500,15 +478,15 @@ function generate_teams($course, $coursemodule, int $nstudentsperteam, string $s
 
     if (count($usersswhoreplied) == 0) {
         $teams = [];
-    } else if ($strategy == MatchingStrategy::RandomMatching) {
+    } else if ($strategy == matching_strategy::RandomMatching) {
         $teams = generate_random_teams($usersswhoreplied, $nstudentsperteam);
-    } else if ($strategy == MatchingStrategy::FastMatching) {
+    } else if ($strategy == matching_strategy::FastMatching) {
         $teams = generate_greedily_teams($usersswhoreplied, $nstudentsperteam, "sse_cost");
-    } else if ($strategy == MatchingStrategy::SimulatedAnnealingSum) {
+    } else if ($strategy == matching_strategy::SimulatedAnnealingSum) {
         $teams = generate_teams_with_simulated_annealing($usersswhoreplied, $nstudentsperteam, "sum_cost");
-    } else if ($strategy == MatchingStrategy::SimulatedAnnealingSse) {
+    } else if ($strategy == matching_strategy::SimulatedAnnealingSse) {
         $teams = generate_teams_with_simulated_annealing($usersswhoreplied, $nstudentsperteam, "sse_cost");
-    } else if ($strategy == MatchingStrategy::SimulatedAnnealingStd) {
+    } else if ($strategy == matching_strategy::SimulatedAnnealingStd) {
         $teams = generate_teams_with_simulated_annealing($usersswhoreplied, $nstudentsperteam, "std_cost");
     } else {
         return [false, 'errorunknownalgo', []]; // TODO: Internationalization
@@ -525,7 +503,7 @@ function generate_teams($course, $coursemodule, int $nstudentsperteam, string $s
     // We match randomly students that have not responded
     $randomteams = generate_random_teams($userswhohaventreplied, $nstudentsperteam);
     foreach ($randomteams as $team) {
-        $team->set_matching_strategy(MatchingStrategy::RandomMatching);
+        $team->set_matching_strategy(matching_strategy::RandomMatchingWithNoCognitiveMode);
     }
 
     $teams = array_merge($teams, $randomteams);
@@ -570,7 +548,7 @@ function seperate_users_who_havent_replied($coursemodule, $users): array {
 function create_teams($course, string $groupingid, array $generatedteams): array {
     $group_name_prefix = "MBTI_";
     $grouping = null;
-    if ($groupingid != GroupingID::All) {
+    if ($groupingid != grouping_id::All) {
         $grouping = groups_get_grouping($groupingid);
         $group_name_prefix = $group_name_prefix . $grouping->name . "_";
     }

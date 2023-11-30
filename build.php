@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUnhandledExceptionInspection */
+<?php
+global $ALL_COGNITIVE_MODES;
+/** @noinspection PhpUnhandledExceptionInspection */
 /** @noinspection SpellCheckingInspection */
 // This file is part of Moodle - https://moodle.org/
 //
@@ -165,16 +167,28 @@ if ($errorwhilecreatingteams != "") {
 echo html_writer::div('', 'hidden', [
         'id' => 'generatedteams',
         'data-generatedteams' => $generatedteams,
+        'data-allcognitivemodes' => json_encode($ALL_COGNITIVE_MODES),
         'data-strings' => json_encode([
                 'ideal' => get_string('ideal', 'mod_polyteam'),
                 'teams' => get_string('teams', 'mod_polyteam'),
                 'cognitivemodesproportions' => get_string('cognitivemodesproportions', 'mod_polyteam'),
                 'standarddeviation' => get_string('standarddeviation', 'mod_polyteam'),
-                MatchingStrategy::RandomMatching => get_string(MatchingStrategy::RandomMatching, 'mod_polyteam'),
-                MatchingStrategy::FastMatching => get_string(MatchingStrategy::FastMatching, 'mod_polyteam'),
-                MatchingStrategy::SimulatedAnnealingSum => get_string(MatchingStrategy::SimulatedAnnealingSum, 'mod_polyteam'),
-                MatchingStrategy::SimulatedAnnealingSse => get_string(MatchingStrategy::SimulatedAnnealingSse, 'mod_polyteam'),
-                MatchingStrategy::SimulatedAnnealingStd => get_string(MatchingStrategy::SimulatedAnnealingStd, 'mod_polyteam'),
+                matching_strategy::RandomMatching => get_string(matching_strategy::RandomMatching, 'mod_polyteam'),
+                matching_strategy::RandomMatchingWithNoCognitiveMode => get_string(matching_strategy::RandomMatchingWithNoCognitiveMode,
+                        'mod_polyteam'),
+                matching_strategy::FastMatching => get_string(matching_strategy::FastMatching, 'mod_polyteam'),
+                matching_strategy::SimulatedAnnealingSum => get_string(matching_strategy::SimulatedAnnealingSum, 'mod_polyteam'),
+                matching_strategy::SimulatedAnnealingSse => get_string(matching_strategy::SimulatedAnnealingSse, 'mod_polyteam'),
+                matching_strategy::SimulatedAnnealingStd => get_string(matching_strategy::SimulatedAnnealingStd, 'mod_polyteam'),
+                cognitive_mode::ES => get_string(cognitive_mode::ES, 'mod_polyteam'),
+                cognitive_mode::IS => get_string(cognitive_mode::IS, 'mod_polyteam'),
+                cognitive_mode::EN => get_string(cognitive_mode::EN, 'mod_polyteam'),
+                cognitive_mode::IN => get_string(cognitive_mode::IN, 'mod_polyteam'),
+                cognitive_mode::ET => get_string(cognitive_mode::ET, 'mod_polyteam'),
+                cognitive_mode::IT => get_string(cognitive_mode::IT, 'mod_polyteam'),
+                cognitive_mode::EF => get_string(cognitive_mode::EF, 'mod_polyteam'),
+                cognitive_mode::IF => get_string(cognitive_mode::IF, 'mod_polyteam'),
+                'nocognitivemodedata' => get_string('nocognitivemodedata', 'mod_polyteam'),
         ])
 ]);
 

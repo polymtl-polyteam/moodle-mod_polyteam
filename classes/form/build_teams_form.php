@@ -30,8 +30,8 @@ global $CFG;
 require_once($CFG->libdir . '/formslib.php');
 require_once(__DIR__ . '/../../helpers/build_constants.php');
 
-use GroupingID;
-use MatchingStrategy;
+use grouping_id;
+use matching_strategy;
 
 // TODO : Internationalization
 // TODO : Refactor random matching to enum ?
@@ -59,11 +59,11 @@ class build_teams_form extends \moodleform {
         $mform->setExpanded('generateteamsheader');
 
         $buttons = array();
-        $strategies = [MatchingStrategy::RandomMatching,
-                MatchingStrategy::FastMatching,
-                MatchingStrategy::SimulatedAnnealingSum,
-                MatchingStrategy::SimulatedAnnealingSse,
-                MatchingStrategy::SimulatedAnnealingStd];
+        $strategies = [matching_strategy::RandomMatching,
+                matching_strategy::FastMatching,
+                matching_strategy::SimulatedAnnealingSum,
+                matching_strategy::SimulatedAnnealingSse,
+                matching_strategy::SimulatedAnnealingStd];
         foreach ($strategies as $strategy) {
             $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', get_string($strategy, 'mod_polyteam'), $strategy);
         }
@@ -79,7 +79,7 @@ class build_teams_form extends \moodleform {
         $select->setSelected($this->_customdata['nstudentsperteam']);
         $mform->addHelpButton('nstudentsperteam', 'nstudentsperteam', 'mod_polyteam');
 
-        $allgroupingssoptions = [GroupingID::All => get_string('allstudents', 'mod_polyteam')];
+        $allgroupingssoptions = [grouping_id::All => get_string('allstudents', 'mod_polyteam')];
         foreach ($this->get_or_default('allgroupings', []) as $grouping) {
             $allgroupingssoptions[$grouping->id] = $grouping->name;
         }
@@ -96,6 +96,11 @@ class build_teams_form extends \moodleform {
             $this->_form->addElement('header', 'createteamsheader', get_string('createteams', 'mod_polyteam'));
             $this->_form->setExpanded('createteamsheader');
 
+            //$mform->addElement('text', 'teamscognitivemodes', get_string('teamscognitivemodes', 'mod_polyteam'));
+            //$mform->addHelpButton('teamscognitivemodes', 'teamscognitivemodes', 'mod_polyteam');
+            $icon = $OUTPUT->help_icon('teamscognitivemodes', 'mod_polyteam');
+            $mform->addElement('html', '<h5 class="text-center">' . get_string('teamscognitivemodes', 'mod_polyteam') . $icon . '</h5>');
+            //$mform->addElement('static', 'teamscognitivemodes', '', get_string('teamscognitivemodes', 'mod_polyteam') . $icon);
             // The chart get rendered in this div. Do not remove nor change ID
             $mform->addElement('html', '<div id="polyteamgeneratedteams"></div>');
 
