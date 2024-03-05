@@ -19,7 +19,7 @@
  *
  * @package     mod_polyteam
  * @category    string
- * @copyright   2023 GIGL <...@polymtl.ca>
+ * @copyright   2023 GIGL <gigl-polyteam@polymtl.ca>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -107,7 +107,6 @@ $string['merciful'] = 'merciful';
 
 // Capabilities.
 
-// Build page
 // Build page.
 $string['mbtiresponserate'] = 'Response rate for the MBTI questionnaire: {$a->count} out of {$a->total}';
 $string['generateteams'] = 'Generate teams';
