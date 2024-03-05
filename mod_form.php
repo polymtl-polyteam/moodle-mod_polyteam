@@ -65,11 +65,6 @@ class mod_polyteam_mod_form extends moodleform_mod {
             $this->add_intro_editor();
         }
 
-        // Adding the rest of mod_polyteam settings, spreading all them into this fieldset
-        // ... $mform->addElement('static', 'label1', 'polyteamsettings', get_string('polyteamsettings', 'mod_polyteam'));
-        // ... or adding more fieldsets ('header' elements) if needed for better logic.
-        // ... $mform->addElement('header', 'polyteamfieldset', get_string('polyteamfieldset', 'mod_polyteam'));
-
         // Availability section to define start and end dates.
         $mform->addElement('header', 'availability', get_string('availability'));
 

@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-// TODO : Change descriptions
 /**
  * Library of interface functions and constants.
  *
@@ -25,30 +24,29 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-class matching_strategy
-{
-    const Unknown = 'unknown';
-    const RandomMatching = 'randommatching';
-    const RandomMatchingWithNoCognitiveMode = 'randommatchingwithnocognitivemode';
-    const FastMatching = 'fastmatching';
-    const SimulatedAnnealingSum = 'simulatedannealingsum';
-    const SimulatedAnnealingSse = 'simulatedannealingsse';
-    const SimulatedAnnealingStd = 'simulatedannealingstd';
+class matching_strategy {
+    const UNKNOWN = 'unknown';
+    const RANDOMMATCHING = 'randommatching';
+    const RANDOMMATCHINGWITHNOCOGNITIVEMODE = 'randommatchingwithnocognitivemode';
+    const FASTMATCHING = 'fastmatching';
+    const SIMULATEDANNEALINGSUM = 'simulatedannealingsum';
+    const SIMULATEDANNEALINGSSE = 'simulatedannealingsse';
+    const SIMULATEDANNEALINGSTD = 'simulatedannealingstd';
 }
 
 class grouping_id {
-    const All = 'all';
+    const ALL = 'all';
 }
 
 class cognitive_mode {
-    const ES = "cognitivemodees"; # Experimentation
-    const IS = "cognitivemodeis"; # Ideation
-    const EN = "cognitivemodeen"; # Knowledge
-    const IN = "cognitivemodein"; # Imagination
-    const ET = "cognitivemodeet"; # Organization
-    const IT = "cognitivemodeit"; # Community
-    const EF = "cognitivemodeef"; # Analysis
-    const IF = "cognitivemodeif"; # Evaluation
+    const ES = "cognitivemodees"; // Experimentation.
+    const IS = "cognitivemodeis"; // Ideation.
+    const EN = "cognitivemodeen"; // Knowledge.
+    const IN = "cognitivemodein"; // Imagination.
+    const ET = "cognitivemodeet"; // Organization.
+    const IT = "cognitivemodeit"; // Community.
+    const EF = "cognitivemodeef"; // Analysis.
+    const IF = "cognitivemodeif"; // Evaluation.
 }
 
 $ALL_COGNITIVE_MODES = [

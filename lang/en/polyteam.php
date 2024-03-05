@@ -108,6 +108,7 @@ $string['merciful'] = 'merciful';
 // Capabilities.
 
 // Build page
+// Build page.
 $string['mbtiresponserate'] = 'Response rate for the MBTI questionnaire: {$a->count} out of {$a->total}';
 $string['generateteams'] = 'Generate teams';
 $string['createteams'] = 'Create teams';
@@ -116,12 +117,12 @@ $string['errorunknownalgo'] = 'Unknown matching algorithm';
 $string['errorunabletocreategroup'] = 'Enable to create one or more group';
 $string['errorenabletoaddstudenttogroup'] = 'Enable to add one or more student to a group';
 $string['errorenableassigngrouping'] = 'Enable to assign one or more grouping to a group';
-$string[matching_strategy::RandomMatching] = 'Random match';
-$string[matching_strategy::RandomMatchingWithNoCognitiveMode] = 'Random match without cognitive modes';
-$string[matching_strategy::FastMatching] = 'Fast matching';
-$string[matching_strategy::SimulatedAnnealingSum] = 'Maximize the number of perfect teams';
-$string[matching_strategy::SimulatedAnnealingSse] = 'Minimize area under cognitive curve';
-$string[matching_strategy::SimulatedAnnealingStd] = 'Minimize cognitive differences between teams';
+$string[matching_strategy::RANDOMMATCHING] = 'Random match';
+$string[matching_strategy::RANDOMMATCHINGWITHNOCOGNITIVEMODE] = 'Random match without cognitive modes';
+$string[matching_strategy::FASTMATCHING] = 'Fast matching';
+$string[matching_strategy::SIMULATEDANNEALINGSUM] = 'Maximize the number of perfect teams';
+$string[matching_strategy::SIMULATEDANNEALINGSSE] = 'Minimize area under cognitive curve';
+$string[matching_strategy::SIMULATEDANNEALINGSTD] = 'Minimize cognitive differences between teams';
 $string['teamssize'] = 'Teams size';
 $string['allstudents'] = 'All students';
 $string['teamsalreadygenerated'] = 'Teams have already been created for the following configuration.';
