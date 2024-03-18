@@ -18,7 +18,7 @@
  * The main mod_polyteam configuration form.
  *
  * @package     mod_polyteam
- * @copyright   2023 GIGL <...@polymtl.ca>
+ * @copyright   2023 GIGL <gigl-polyteam@polymtl.ca>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,7 +30,7 @@ require_once($CFG->dirroot.'/course/moodleform_mod.php');
  * Module instance settings form.
  *
  * @package     mod_polyteam
- * @copyright   2023 GIGL <...@polymtl.ca>
+ * @copyright   2023 GIGL <gigl-polyteam@polymtl.ca>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_polyteam_mod_form extends moodleform_mod {
@@ -64,11 +64,6 @@ class mod_polyteam_mod_form extends moodleform_mod {
         } else {
             $this->add_intro_editor();
         }
-
-        // Adding the rest of mod_polyteam settings, spreading all them into this fieldset
-        // ... $mform->addElement('static', 'label1', 'polyteamsettings', get_string('polyteamsettings', 'mod_polyteam'));
-        // ... or adding more fieldsets ('header' elements) if needed for better logic.
-        // ... $mform->addElement('header', 'polyteamfieldset', get_string('polyteamfieldset', 'mod_polyteam'));
 
         // Availability section to define start and end dates.
         $mform->addElement('header', 'availability', get_string('availability'));

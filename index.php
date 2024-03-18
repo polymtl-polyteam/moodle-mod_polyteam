@@ -18,7 +18,7 @@
  * Display information about all the mod_polyteam modules in the requested course.
  *
  * @package     mod_polyteam
- * @copyright   2023 GIGL <...@polymtl.ca>
+ * @copyright   2023 GIGL <gigl-polyteam@polymtl.ca>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

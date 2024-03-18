@@ -1,7 +1,4 @@
 <?php
-global $ALL_COGNITIVE_MODES;
-/** @noinspection PhpUnhandledExceptionInspection */
-/** @noinspection SpellCheckingInspection */
 // This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -21,7 +18,7 @@ global $ALL_COGNITIVE_MODES;
  * Build teams based on questionnaire answers.
  *
  * @package     mod_polyteam
- * @copyright   2023 GIGL <...@polymtl.ca>
+ * @copyright   2023 GIGL <gigl-polyteam@polymtl.ca>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -31,12 +28,13 @@ require_once(__DIR__ . '/helpers/build_helper_functions.php');
 require_once(__DIR__ . '/classes/form/build_teams_form.php');
 
 global $DB, $PAGE, $OUTPUT;
+global $ALL_COGNITIVE_MODES;
 
-// Course module
+// Course module.
 $cm_id = optional_param('id', 0, PARAM_INT);
 $cm = get_coursemodule_from_id('polyteam', $cm_id, 0, false, MUST_EXIST);
 
-// Course
+// Course.
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 $cminstance = $DB->get_record('polyteam', array('id' => $cm->instance), '*', MUST_EXIST);
 
@@ -44,7 +42,7 @@ require_login($course, true, $cm);
 
 $modulecontext = context_module::instance($cm->id);
 
-// TODO: Change capability to a more appropriate one
+// TODO: Change capability to a more appropriate one.
 require_capability('mod/polyteam:viewanswers', $modulecontext);
 
 // TODO: Event ?
@@ -55,17 +53,13 @@ $PAGE->set_context($modulecontext);
 
 echo $OUTPUT->header();
 
-$allmbtianswerscount = $DB->get_record_sql(
-        'SELECT COUNT(*) AS rowcount FROM {polyteam_mbti} WHERE moduleid = ?',
-        [$cm->id]
-)->rowcount;
-
-// Display the form response rate
+// Display the form response rate.
+$allmbtianswerscount = $DB->count_records('polyteam_mbti_ans', ['moduleid' => $cm->id]);
 $nstudents = count_enrolled_users($modulecontext, 'mod/assign:submit');
 $responseratestr = get_string('mbtiresponserate', 'mod_polyteam', ['count' => $allmbtianswerscount, 'total' => $nstudents]);
 echo html_writer::div(html_writer::tag('p', $responseratestr), "text-center");
 
-// The page has two form. A first one to generate teams and a second one to create them.
+// The page has two forms. A first one to generate teams and a second one to create them.
 // We save form date in polyteam_build_cache table.
 $formcustomdatacache = $DB->get_record('polyteam_build_cache', ['moduleid' => $cm->id]);
 if ($formcustomdatacache) {
@@ -117,7 +111,7 @@ if ($fromform = $mform->get_data()) {
         $teamshavebeencreated = false;
     } else if ($submittedbutton == get_string('createteams', 'mod_polyteam')) {
         list($teamshavebeencreated, $errorwhilecreatingteams) = create_teams(
-                $course, $grouping, json_decode($generatedteams)
+                $course, $grouping, array($generatedteams)
         );
     }
     $record = new stdClass();
@@ -173,13 +167,13 @@ echo html_writer::div('', 'hidden', [
                 'teams' => get_string('teams', 'mod_polyteam'),
                 'cognitivemodesproportions' => get_string('cognitivemodesproportions', 'mod_polyteam'),
                 'standarddeviation' => get_string('standarddeviation', 'mod_polyteam'),
-                matching_strategy::RandomMatching => get_string(matching_strategy::RandomMatching, 'mod_polyteam'),
-                matching_strategy::RandomMatchingWithNoCognitiveMode => get_string(matching_strategy::RandomMatchingWithNoCognitiveMode,
-                        'mod_polyteam'),
-                matching_strategy::FastMatching => get_string(matching_strategy::FastMatching, 'mod_polyteam'),
-                matching_strategy::SimulatedAnnealingSum => get_string(matching_strategy::SimulatedAnnealingSum, 'mod_polyteam'),
-                matching_strategy::SimulatedAnnealingSse => get_string(matching_strategy::SimulatedAnnealingSse, 'mod_polyteam'),
-                matching_strategy::SimulatedAnnealingStd => get_string(matching_strategy::SimulatedAnnealingStd, 'mod_polyteam'),
+                matching_strategy::RANDOMMATCHING => get_string(matching_strategy::RANDOMMATCHING, 'mod_polyteam'),
+                matching_strategy::RANDOMMATCHINGWITHNOCOGNITIVEMODE => get_string(
+                        matching_strategy::RANDOMMATCHINGWITHNOCOGNITIVEMODE, 'mod_polyteam'),
+                matching_strategy::FASTMATCHING => get_string(matching_strategy::FASTMATCHING, 'mod_polyteam'),
+                matching_strategy::SIMULATEDANNEALINGSUM => get_string(matching_strategy::SIMULATEDANNEALINGSUM, 'mod_polyteam'),
+                matching_strategy::SIMULATEDANNEALINGSSE => get_string(matching_strategy::SIMULATEDANNEALINGSSE, 'mod_polyteam'),
+                matching_strategy::SIMULATEDANNEALINGSTD => get_string(matching_strategy::SIMULATEDANNEALINGSTD, 'mod_polyteam'),
                 cognitive_mode::ES => get_string(cognitive_mode::ES, 'mod_polyteam'),
                 cognitive_mode::IS => get_string(cognitive_mode::IS, 'mod_polyteam'),
                 cognitive_mode::EN => get_string(cognitive_mode::EN, 'mod_polyteam'),

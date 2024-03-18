@@ -1,4 +1,4 @@
-<?php /** @noinspection SpellCheckingInspection */
+<?php
 // This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  * Interface functions used by the build page.
  *
  * @package     mod_polyteam
- * @copyright   2023 GIGL <...@polymtl.ca>
+ * @copyright   2023 GIGL <gigl-polyteam@polymtl.ca>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -35,7 +35,7 @@ function standard_deviation(array $data): float {
     $n = count($data);
 
     if ($n <= 1) {
-        return 0; // Standard deviation is undefined for a single value or an empty array
+        return 0; // Standard deviation is undefined for a single value or an empty array.
     }
 
     $mean = array_sum($data) / $n;
@@ -102,7 +102,6 @@ class cognitive_mode_metrics {
         }
         return $modes;
     }
-
 }
 
 class form_metrics {
@@ -135,12 +134,12 @@ class form_metrics {
 }
 
 class student implements JsonSerializable {
-    // TODO: Only save required attributes from the user
-    private object $user;
+    // TODO: Only save required attributes from the user.
+    private int $id;
     private array $modes;
 
-    public function __construct(object $user, form_metrics $formmetrics) {
-        $this->user = $user;
+    public function __construct(int $id, form_metrics $formmetrics) {
+        $this->id = $id;
         $this->modes = [];
         $cognitivemodemetrics = $formmetrics->get_cognitive_mode_metrics();
         foreach ($cognitivemodemetrics->get_modes() as $mode) {
@@ -149,7 +148,7 @@ class student implements JsonSerializable {
     }
 
     public function get_user(): object {
-        return $this->user;
+        return $this->id;
     }
 
     public function get_cognitive_modes_names(): array {
@@ -162,7 +161,7 @@ class student implements JsonSerializable {
 
     public function jsonSerialize(): array {
         return [
-                "user" => $this->user,
+                "id" => $this->id,
                 "modes" => $this->modes
         ];
     }
@@ -177,7 +176,7 @@ class team implements JsonSerializable {
 
     private string $matchingstrategy;
 
-    public function __construct($students = [], $matching_strategy = matching_strategy::Unknown) {
+    public function __construct($students = [], $matchingstrategy = matching_strategy::UNKNOWN) {
         $this->students = $students;
         $this->cognitivemodescounter = get_new_cognitive_mode_counter();
         foreach ($this->students as $student) {
@@ -187,7 +186,7 @@ class team implements JsonSerializable {
         }
         $this->cognitivevariance = get_variance_from_cognitive_modes_counter($this->cognitivemodescounter);
 
-        $this->matchingstrategy = $matching_strategy;
+        $this->matchingstrategy = $matchingstrategy;
     }
 
     public function add_student(student $student): void {
@@ -255,21 +254,6 @@ function generate_one_fake_form_metrics(
     }
     return new form_metrics($ei, $jp, $sn, $tf);
 }
-
-//function generate_random_teams(array $students, int $team_size): array {
-//    $studentsshuffled = array_slice($students, 0);
-//    shuffle($studentsshuffled);
-//
-//    $numteams = ceil(count($studentsshuffled) / $team_size);
-//    $generatedteams = [];
-//
-//    for ($i = 0; $i < $numteams; $i++) {
-//        $team_students = array_slice($studentsshuffled, $i * $team_size, $team_size);
-//        $generatedteams[] = new team($team_students);
-//    }
-//
-//    return $generatedteams;
-//}
 
 function generate_random_teams(array $students, int $team_size): array {
     $studentsshuffled = array_slice($students, 0);
@@ -429,7 +413,7 @@ function generate_teams_with_simulated_annealing(
 
     $currenttemp = $initialtemperature;
 
-    // Initialize the current solution with the initial state
+    // Initialize the current solution with the initial state.
     $currentsolution = generate_greedily_teams($students, $teamsize);
     if (count($currentsolution) <= 1) {
         return $currentsolution;
@@ -439,7 +423,7 @@ function generate_teams_with_simulated_annealing(
     $bestcost = $currentcost;
 
     $nteams = ceil(count($students) / $teamsize);
-    $maximalnumberofneighbour = $nteams * ($nteams - 1) / 2; # Total number of groups of 2
+    $maximalnumberofneighbour = $nteams * ($nteams - 1) / 2; // Total number of groups of 2.
     $nneighbortogenerate = min(50, $maximalnumberofneighbour);
     while ($currenttemp > $stoppingtemperature) {
         $neighborsolsandcosts = [];
@@ -454,10 +438,10 @@ function generate_teams_with_simulated_annealing(
 
         list($neighborsol, $neighborsolcost) = reset($neighborsolsandcosts);
 
-        // Check if neighbor is best so far
+        // Check if neighbor is best so far.
         $costdiff = $currentcost - $neighborsolcost;
 
-        // Accept the new solution if it's better or with a probability of e^(-cost/temp)
+        // Accept the new solution if it's better or with a probability of e^(-cost/temp).
         $neighborsolaccepted = ($costdiff > 0) || (get_random_float() < exp(-$costdiff / $currenttemp));
         if ($neighborsolaccepted) {
             $currentsolution = $neighborsol;
@@ -469,7 +453,7 @@ function generate_teams_with_simulated_annealing(
             }
         }
 
-        // Decrement the temperature
+        // Decrement the temperature.
         $currenttemp *= $coolingrate;
     }
 
@@ -478,39 +462,40 @@ function generate_teams_with_simulated_annealing(
 
 function generate_teams($course, $coursemodule, int $nstudentsperteam, string $strategy, string $groupingid): array {
     $ctx = context_course::instance($course->id);
-    if ($groupingid == grouping_id::All) {
-        // TODO: Change capability to users that can answer the questionnaire
-        $users = get_enrolled_users($ctx, 'mod/assign:submit');
+    if ($groupingid == grouping_id::ALL) {
+        $users = array_keys(get_enrolled_users($ctx, 'mod/polyteam:answerquestionnaire'));
     } else {
         $users = groups_get_grouping_members($groupingid, 'DISTINCT u.id');
+        // TODO : test if this works when using groupings (that we only get team IDs).
     }
+
     if (count($users) == 0) {
         return [false, 'errornotenoughstudents', []];
-    } else if (count($users) <= $nstudentsperteam) {
+    } else if (count($users) < $nstudentsperteam) {
         $students = array_map(function($user) {
             return new student($user, new form_metrics(0, 0, 0, 0));
         }, $users);
         return [true, '', new team($students, $strategy)];
     }
 
-    // We match students that have replied using the choosen matching strategy
+    // We match students that have replied using the choosen matching strategy.
     list($usersswhoreplied, $userswhohaventreplied) =
-            seperate_users_who_havent_replied($coursemodule, $users);
+            separate_users_who_havent_replied($coursemodule, $users);
 
     if (count($usersswhoreplied) == 0) {
         $teams = [];
-    } else if ($strategy == matching_strategy::RandomMatching) {
+    } else if ($strategy == matching_strategy::RANDOMMATCHING) {
         $teams = generate_random_teams($usersswhoreplied, $nstudentsperteam);
-    } else if ($strategy == matching_strategy::FastMatching) {
-        $teams = generate_greedily_teams($usersswhoreplied, $nstudentsperteam);
-    } else if ($strategy == matching_strategy::SimulatedAnnealingSum) {
+    } else if ($strategy == matching_strategy::FASTMATCHING) {
+        $teams = generate_greedily_teams($usersswhoreplied, $nstudentsperteam, "sse_cost");
+    } else if ($strategy == matching_strategy::SIMULATEDANNEALINGSUM) {
         $teams = generate_teams_with_simulated_annealing($usersswhoreplied, $nstudentsperteam, "sum_cost");
-    } else if ($strategy == matching_strategy::SimulatedAnnealingSse) {
+    } else if ($strategy == matching_strategy::SIMULATEDANNEALINGSSE) {
         $teams = generate_teams_with_simulated_annealing($usersswhoreplied, $nstudentsperteam, "sse_cost");
-    } else if ($strategy == matching_strategy::SimulatedAnnealingStd) {
+    } else if ($strategy == matching_strategy::SIMULATEDANNEALINGSTD) {
         $teams = generate_teams_with_simulated_annealing($usersswhoreplied, $nstudentsperteam, "std_cost");
     } else {
-        return [false, 'errorunknownalgo', []]; // TODO: Internationalization
+        return [false, 'errorunknownalgo', []]; // TODO: Internationalization.
     }
 
     usort($teams, function($a, $b) {
@@ -521,10 +506,10 @@ function generate_teams($course, $coursemodule, int $nstudentsperteam, string $s
         $team->set_matching_strategy($strategy);
     }
 
-    // We match randomly students that have not responded
+    // We match randomly students that have not responded.
     $randomteams = generate_random_teams($userswhohaventreplied, $nstudentsperteam);
     foreach ($randomteams as $team) {
-        $team->set_matching_strategy(matching_strategy::RandomMatchingWithNoCognitiveMode);
+        $team->set_matching_strategy(matching_strategy::RANDOMMATCHINGWITHNOCOGNITIVEMODE);
     }
 
     $teams = array_merge($teams, $randomteams);
@@ -532,28 +517,28 @@ function generate_teams($course, $coursemodule, int $nstudentsperteam, string $s
     return [true, '', json_encode($teams)];
 }
 
-function seperate_users_who_havent_replied($coursemodule, $users): array {
+function separate_users_who_havent_replied($coursemodule, $users): array {
     global $DB;
-    $allmbtianswers = $DB->get_records('polyteam_mbti', array('moduleid' => $coursemodule->id));
+    $allmbtianswers = $DB->get_records('polyteam_mbti_ans', array('moduleid' => $coursemodule->id));
 
     $usersswhoreplied = [];
     $userswhohaventreplied = [];
     foreach ($users as $user) {
         $studentreplied = false;
         foreach ($allmbtianswers as $mbtianswer) {
-            if ($user->id === $mbtianswer->userid) {
+            if ($user == $mbtianswer->userid) {
                 $studentreplied = true;
                 break;
             }
         }
         if ($studentreplied) {
-            // TODO: Agree on $mbtianswer fields
-            // $fm = new FormMetrics(
-            //     intval($mbtianswer->ei),
-            //     intval($mbtianswer->jp),
-            //     intval($mbtianswer->sn),
-            //     intval($mbtianswer->tf)
-            // );
+            // TODO: Agree on $mbtianswer fields.
+            /* $fm = new FormMetrics(
+                 intval($mbtianswer->ei),
+                 intval($mbtianswer->jp),
+                 intval($mbtianswer->sn),
+                 intval($mbtianswer->tf)
+             ); */
             $fm = generate_one_fake_form_metrics(0.5, 0.5, 0.5, 0.5);
             $usersswhoreplied[] = new student($user, $fm);
         } else {
@@ -567,17 +552,17 @@ function seperate_users_who_havent_replied($coursemodule, $users): array {
 }
 
 function create_teams($course, string $groupingid, array $generatedteams): array {
-    $group_name_prefix = "MBTI_";
+    $groupnameprefix = "MBTI_";
     $grouping = null;
-    if ($groupingid != grouping_id::All) {
+    if ($groupingid != grouping_id::ALL) {
         $grouping = groups_get_grouping($groupingid);
-        $group_name_prefix = $group_name_prefix . $grouping->name . "_";
+        $groupnameprefix = $groupnameprefix . $grouping->name . "_";
     }
 
-    // Remove all groups with the prefix before creating new ones
+    // Remove all groups with the prefix before creating new ones.
     $allgroups = groups_get_all_groups($course->id);
     foreach ($allgroups as $group) {
-        if (substr($group->name, 0, strlen($group_name_prefix)) == $group_name_prefix) {
+        if (substr($group->name, 0, strlen($groupnameprefix)) == $groupnameprefix) {
             groups_delete_group($group);
         }
     }
@@ -585,7 +570,7 @@ function create_teams($course, string $groupingid, array $generatedteams): array
     foreach ($generatedteams as $i => $generatedteam) {
         $groupid = groups_create_group(
                 (object) array(
-                        'name' => $group_name_prefix . sprintf("%02d", $i + 1),
+                        'name' => $groupnameprefix . sprintf("%02d", $i + 1),
                         'courseid' => $course->id
                 )
         );
@@ -593,7 +578,7 @@ function create_teams($course, string $groupingid, array $generatedteams): array
             return [false, 'errorunabletocreategroup'];
         }
         foreach ($generatedteam->students as $student) {
-            if (!groups_add_member($groupid, $student->user->id)) {
+            if (!groups_add_member($groupid, $student->id)) {
                 return [false, 'errorenabletoaddstudenttogroup'];
             }
         }

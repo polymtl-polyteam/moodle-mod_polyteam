@@ -18,7 +18,7 @@
  * Prints an instance of mod_polyteam.
  *
  * @package     mod_polyteam
- * @copyright   2023 GIGL <...@polymtl.ca>
+ * @copyright   2023 GIGL <gigl-polyteam@polymtl.ca>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -80,7 +80,7 @@ $backtocourseurl = new moodle_url('/course/view.php', array('id' => $cm->course)
 $editquestionnaire = optional_param('e', 0, PARAM_INT);
 // Any arbitrary data assigned to e in the URL would result a PARAM_BOOL to be true, so we use a PARAM_INT instead.
 
-if ($moduleinstance->timeopen and time() < $moduleinstance->timeopen) { // First condition to check if timeopen != 0 (default).
+if ($moduleinstance->timeopen && time() < $moduleinstance->timeopen) { // First condition to check if timeopen != 0 (default).
     echo html_writer::tag('p', get_string('notopenyet', 'mod_polyteam', userdate($moduleinstance->timeopen)));
     echo html_writer::link(
         $backtocourseurl,
@@ -88,9 +88,9 @@ if ($moduleinstance->timeopen and time() < $moduleinstance->timeopen) { // First
         array('class' => 'btn btn-secondary')
     );
     // Replace by notice(get_string(...), $backtocourseurl) ? In notice, the redirect button has a 'Continue' label though.
-} else { 
+} else {
     // Date is either ok or too late.
-    if ($moduleinstance->timeclose and time() > $moduleinstance->timeclose) {
+    if ($moduleinstance->timeclose && time() > $moduleinstance->timeclose) {
         echo html_writer::tag('p', get_string('nowclosed', 'mod_polyteam', userdate($moduleinstance->timeclose)));
         echo html_writer::link(
             $backtocourseurl,
@@ -102,7 +102,7 @@ if ($moduleinstance->timeopen and time() < $moduleinstance->timeopen) { // First
     } else { // Date is ok.
         // Setting the interface whether the user is allowed to answer or not.
         if (has_capability('mod/polyteam:answerquestionnaire', $modulecontext)) {
-            if ($editquestionnaire == 0) { 
+            if ($editquestionnaire == 0) {
                 // Interface elements to reload the page in edit mode.
 
                 $editurl = new moodle_url('/mod/polyteam/view.php', array('id' => $cm->id, 'e' => 1));
@@ -141,7 +141,7 @@ if ($moduleinstance->timeopen and time() < $moduleinstance->timeopen) { // First
 
     // Displaying and processing form.
 
-    if ($recordans = $DB->get_record('polyteam_mbti_ans', array('moduleid' => $cm->id, 'userid' => $USER->id))){
+    if ($recordans = $DB->get_record('polyteam_mbti_ans', array('moduleid' => $cm->id, 'userid' => $USER->id))) {
         $mform = new \mod_polyteam\form\mbti_form(null, array('id' => $cm->id, 'edit' => $editquestionnaire, 'prev' => $recordans));
     } else {
         $mform = new \mod_polyteam\form\mbti_form(null, array('id' => $cm->id, 'edit' => $editquestionnaire, 'prev' => array()));

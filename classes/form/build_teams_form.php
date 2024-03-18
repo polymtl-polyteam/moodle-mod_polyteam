@@ -18,7 +18,7 @@
  * the mod_polyteam build team form.
  *
  * @package     mod_polyteam
- * @copyright   2023 GIGL <...@polymtl.ca>
+ * @copyright   2023 GIGL <gigl-polyteam@polymtl.ca>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -40,7 +40,7 @@ use matching_strategy;
  * the mod_polyteam build team form class.
  *
  * @package     mod_polyteam
- * @copyright   2023 GIGL <...@polymtl.ca>
+ * @copyright   2023 GIGL <gigl-polyteam@polymtl.ca>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class build_teams_form extends \moodleform {
@@ -59,11 +59,11 @@ class build_teams_form extends \moodleform {
         $mform->setExpanded('generateteamsheader');
 
         $buttons = array();
-        $strategies = [matching_strategy::RandomMatching,
-                matching_strategy::FastMatching,
-                matching_strategy::SimulatedAnnealingSum,
-                matching_strategy::SimulatedAnnealingSse,
-                matching_strategy::SimulatedAnnealingStd];
+        $strategies = [matching_strategy::RANDOMMATCHING,
+                matching_strategy::FASTMATCHING,
+                matching_strategy::SIMULATEDANNEALINGSUM,
+                matching_strategy::SIMULATEDANNEALINGSSE,
+                matching_strategy::SIMULATEDANNEALINGSTD];
         foreach ($strategies as $strategy) {
             $buttons[] =& $mform->createElement('radio', 'matchingstrategy', '', get_string($strategy, 'mod_polyteam'), $strategy);
         }
@@ -79,7 +79,7 @@ class build_teams_form extends \moodleform {
         $select->setSelected($this->_customdata['nstudentsperteam']);
         $mform->addHelpButton('nstudentsperteam', 'nstudentsperteam', 'mod_polyteam');
 
-        $allgroupingssoptions = [grouping_id::All => get_string('allstudents', 'mod_polyteam')];
+        $allgroupingssoptions = [grouping_id::ALL => get_string('allstudents', 'mod_polyteam')];
         foreach ($this->get_or_default('allgroupings', []) as $grouping) {
             $allgroupingssoptions[$grouping->id] = $grouping->name;
         }
@@ -96,12 +96,12 @@ class build_teams_form extends \moodleform {
             $this->_form->addElement('header', 'createteamsheader', get_string('createteams', 'mod_polyteam'));
             $this->_form->setExpanded('createteamsheader');
 
-            //$mform->addElement('text', 'teamscognitivemodes', get_string('teamscognitivemodes', 'mod_polyteam'));
-            //$mform->addHelpButton('teamscognitivemodes', 'teamscognitivemodes', 'mod_polyteam');
+            // $mform->addElement('text', 'teamscognitivemodes', get_string('teamscognitivemodes', 'mod_polyteam'));
+            // $mform->addHelpButton('teamscognitivemodes', 'teamscognitivemodes', 'mod_polyteam');
             $icon = $OUTPUT->help_icon('teamscognitivemodes', 'mod_polyteam');
             $mform->addElement('html', '<h5 class="text-center">' . get_string('teamscognitivemodes', 'mod_polyteam') . $icon . '</h5>');
-            //$mform->addElement('static', 'teamscognitivemodes', '', get_string('teamscognitivemodes', 'mod_polyteam') . $icon);
-            // The chart get rendered in this div. Do not remove nor change ID
+            // $mform->addElement('static', 'teamscognitivemodes', '', get_string('teamscognitivemodes', 'mod_polyteam') . $icon);
+            // The chart get rendered in this div. Do not remove nor change ID.
             $mform->addElement('html', '<div id="polyteamgeneratedteams"></div>');
 
             $teamshavebeencreated = $this->get_or_default('teamshavebeencreated', false);
