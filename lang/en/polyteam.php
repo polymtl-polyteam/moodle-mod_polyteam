@@ -42,6 +42,8 @@ $string['polyteamname'] = 'Name';
 // Main interface.
 $string['mbtiquest'] = 'MBTI questionnaire';
 $string['buildteams'] = 'Build teams';
+$string['viewmbtiteams'] = 'View MBTI teams';
+$string['mbtiteams'] = 'MBTI teams';
 $string['notopenyet'] = 'This activity is not open until {$a}.';
 $string['nowclosed'] = 'This activity ended on {$a} and is no longer available.';
 $string['backtocourse'] = 'Back to course page';

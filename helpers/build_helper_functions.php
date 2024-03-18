@@ -256,16 +256,37 @@ function generate_one_fake_form_metrics(
     return new form_metrics($ei, $jp, $sn, $tf);
 }
 
+//function generate_random_teams(array $students, int $team_size): array {
+//    $studentsshuffled = array_slice($students, 0);
+//    shuffle($studentsshuffled);
+//
+//    $numteams = ceil(count($studentsshuffled) / $team_size);
+//    $generatedteams = [];
+//
+//    for ($i = 0; $i < $numteams; $i++) {
+//        $team_students = array_slice($studentsshuffled, $i * $team_size, $team_size);
+//        $generatedteams[] = new team($team_students);
+//    }
+//
+//    return $generatedteams;
+//}
+
 function generate_random_teams(array $students, int $team_size): array {
     $studentsshuffled = array_slice($students, 0);
     shuffle($studentsshuffled);
 
     $numteams = ceil(count($studentsshuffled) / $team_size);
-    $generatedteams = [];
+    $generatedteams = array_fill(0, $numteams, []);
 
-    for ($i = 0; $i < $numteams; $i++) {
-        $team_students = array_slice($studentsshuffled, $i * $team_size, $team_size);
-        $generatedteams[] = new team($team_students);
+    $teamIndex = 0;
+    foreach($studentsshuffled as $student) {
+        $generatedteams[$teamIndex][] = $student;
+        $teamIndex = ($teamIndex + 1) % $numteams;
+    }
+
+    // Convert arrays to team instances
+    foreach ($generatedteams as $i => $team_students) {
+        $generatedteams[$i] = new team($team_students);
     }
 
     return $generatedteams;
@@ -481,7 +502,7 @@ function generate_teams($course, $coursemodule, int $nstudentsperteam, string $s
     } else if ($strategy == matching_strategy::RandomMatching) {
         $teams = generate_random_teams($usersswhoreplied, $nstudentsperteam);
     } else if ($strategy == matching_strategy::FastMatching) {
-        $teams = generate_greedily_teams($usersswhoreplied, $nstudentsperteam, "sse_cost");
+        $teams = generate_greedily_teams($usersswhoreplied, $nstudentsperteam);
     } else if ($strategy == matching_strategy::SimulatedAnnealingSum) {
         $teams = generate_teams_with_simulated_annealing($usersswhoreplied, $nstudentsperteam, "sum_cost");
     } else if ($strategy == matching_strategy::SimulatedAnnealingSse) {

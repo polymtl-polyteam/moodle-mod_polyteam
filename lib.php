@@ -105,7 +105,7 @@ function polyteam_delete_instance($id) {
 }
 
 /**
- * Adds a 'build team' tab to the tertiary navigation system.
+ * Adds 'build team' and 'view teams' tabs to the tertiary navigation system.
  *
  * @param settings_navigation $settings The settings navigation object
  * @param navigation_node $polyteamnode The node to add settings module to
@@ -117,6 +117,13 @@ function polyteam_extend_settings_navigation(settings_navigation $settings, navi
         $polyteamnode->add(
             get_string('buildteams', 'polyteam'),
             new moodle_url('/mod/polyteam/build.php', array('id' => $PAGE->cm->id))
+        );
+    }
+
+    if (has_capability('mod/polyteam:viewanswers', $PAGE->cm->context)) {
+        $polyteamnode->add(
+                get_string('viewmbtiteams', 'polyteam'),
+                new moodle_url('/mod/polyteam/teams.php', array('id' => $PAGE->cm->id))
         );
     }
 }
